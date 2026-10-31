@@ -50,7 +50,7 @@ export default function ErpPage() {
           setToWh(json.data.warehouses[1].id);
         }
       } else {
-        setError(json.error?.message || "載入 ERP 資料失敗");
+        setError(json.error?.message || "Unable to load ERP data");
       }
     } catch (e: any) {
       setError(e.message);
@@ -84,10 +84,10 @@ export default function ErpPage() {
 
       const json: any = await res.json();
       if (json.success) {
-        setSuccess(`調撥成功！來源倉結餘: ${json.data.sourceBalanceAfter}，目的倉結餘: ${json.data.destBalanceAfter}，庫存總量守恆`);
+        setSuccess(`Transfer complete. Source balance: : ${json.data.sourceBalanceAfter}, destination balance: : ${json.data.destBalanceAfter}, total stock preserved`);
         fetchData();
       } else {
-        setError(json.error?.message || "調撥失敗");
+        setError(json.error?.message || "Transfer failed");
       }
     } catch (err: any) {
       setError(err.message);
@@ -113,10 +113,10 @@ export default function ErpPage() {
 
       const json: any = await res.json();
       if (json.success) {
-        setSuccess(`發票收款成功！累計已收: $${json.data.paidAmount}，未收結清: $${json.data.unpaidAmount}，狀態: ${json.data.status}`);
+        setSuccess(`Payment recorded. Total received: : $${json.data.paidAmount}, outstanding: : $${json.data.unpaidAmount}, status: : ${json.data.status}`);
         fetchData();
       } else {
-        setError(json.error?.message || "支付失敗");
+        setError(json.error?.message || "Payment failed");
       }
     } catch (err: any) {
       setError(err.message);
@@ -131,8 +131,8 @@ export default function ErpPage() {
 
   return (
     <main data-site="erp" className="suite-page suite-erp space-y-7">
-      <WorkspaceHeader brand="LedgerWorks" eyebrow="ERP / 營運工作台" title="每筆單據，都有清楚的來去。" description="庫存、採購、銷售與帳務，在同一個工作區連成完整脈絡。" onRefresh={fetchData} busy={loading}/>
-      <WorkspaceLinks links={[{href:"#finance",label:"帳務總覽"},{href:"#inventory",label:"庫存與調撥"},{href:"#erp-operations",label:"採購與銷售"},{href:"#erp-advanced",label:"進階帳務"}]}/>
+      <WorkspaceHeader brand="LedgerWorks" eyebrow="ERP / Operations workspace" title="Every transaction, clearly connected." description="Connect inventory, purchasing, sales and accounting in one workspace." onRefresh={fetchData} busy={loading}/>
+      <WorkspaceLinks links={[{href:"#finance",label:"Accounting overview"},{href:"#inventory",label:"Inventory and transfers"},{href:"#erp-operations",label:"Purchasing and sales"},{href:"#erp-advanced",label:"Advanced accounting"}]}/>
       {error && (
         <div role="alert" className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -152,26 +152,26 @@ export default function ErpPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Scale className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-sm font-bold text-stone-900">總帳試算表平衡檢核</h2>
+            <h2 className="text-sm font-bold text-stone-900">Trial balance check</h2>
           </div>
           <span className="text-xs font-mono font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-            {tb?.isBalanced ? "✓ 借貸恆等平衡 (Balanced)" : "借貸不平"}
+            {tb?.isBalanced ? "✓ Debits and credits balanced (Balanced)" : "Debits and credits unbalanced"}
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
-            <div className="text-stone-500 font-medium">借方總額 (Grand Debit)</div>
+            <div className="text-stone-500 font-medium">Total debits (Grand Debit)</div>
             <div className="text-xl font-bold font-mono text-stone-900 mt-1">${tb?.grandDebit?.toLocaleString()}</div>
           </div>
           <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
-            <div className="text-stone-500 font-medium">貸方總額 (Grand Credit)</div>
+            <div className="text-stone-500 font-medium">Total credits (Grand Credit)</div>
             <div className="text-xl font-bold font-mono text-stone-900 mt-1">${tb?.grandCredit?.toLocaleString()}</div>
           </div>
           <div className="p-3 bg-stone-50 rounded-lg border border-stone-200">
-            <div className="text-stone-500 font-medium">移動平均單價 (Moving Average)</div>
-            <div className="text-xl font-bold font-mono text-emerald-700 mt-1">${data?.costing?.[0]?.movingAverageCost?.toLocaleString() ?? "—"} / 件</div>
-            <div className="text-[10px] text-stone-400">{data?.items?.find((item: any) => item.id === data?.costing?.[0]?.itemId)?.name || "尚無成本資料"} · 實際帳面成本</div>
+            <div className="text-stone-500 font-medium">Moving average cost (Moving Average)</div>
+            <div className="text-xl font-bold font-mono text-emerald-700 mt-1">${data?.costing?.[0]?.movingAverageCost?.toLocaleString() ?? "—"} / units</div>
+            <div className="text-[10px] text-stone-400">{data?.items?.find((item: any) => item.id === data?.costing?.[0]?.itemId)?.name || "No cost data"} · Book cost</div>
           </div>
         </div>
       </section>
@@ -184,21 +184,21 @@ export default function ErpPage() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
                 <Boxes className="w-4 h-4 text-stone-700" />
-                <span>庫存流水帳卡 (Stock Ledger)</span>
+                <span>Stock ledger (Stock Ledger)</span>
               </h3>
-              <span className="text-xs text-stone-500">最新過帳交易</span>
+              <span className="text-xs text-stone-500">Latest posted transactions</span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-stone-200 text-stone-500 bg-stone-50/50">
-                    <th className="p-2.5 font-medium">異動單據</th>
-                    <th className="p-2.5 font-medium">倉別</th>
-                    <th className="p-2.5 font-medium">異動類別</th>
-                    <th className="p-2.5 font-medium">變動數量</th>
-                    <th className="p-2.5 font-medium">過帳後結餘</th>
-                    <th className="p-2.5 font-medium">單價成本</th>
+                    <th className="p-2.5 font-medium">Reference</th>
+                    <th className="p-2.5 font-medium">Warehouse</th>
+                    <th className="p-2.5 font-medium">Movement type</th>
+                    <th className="p-2.5 font-medium">Quantity change</th>
+                    <th className="p-2.5 font-medium">Closing balance</th>
+                    <th className="p-2.5 font-medium">Unit cost</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 font-mono">
@@ -227,7 +227,7 @@ export default function ErpPage() {
           <section className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-emerald-600" />
-              <span>應收應付帳單結清</span>
+              <span>Settle receivables and payables</span>
             </h3>
 
             <div className="space-y-3 text-xs">
@@ -238,7 +238,7 @@ export default function ErpPage() {
                     <div className="space-y-1">
                       <div className="font-mono font-bold text-stone-900">{inv.invoiceNumber}</div>
                       <div className="text-stone-500">
-                        總額: ${inv.totalAmount} | 已付: ${inv.paidAmount} | 未結清: ${unpaid}
+                        Total: ${inv.totalAmount} | Paid: ${inv.paidAmount} | Outstanding: ${unpaid}
                       </div>
                     </div>
 
@@ -258,12 +258,12 @@ export default function ErpPage() {
                             disabled={paying}
                             className="px-3 py-1.5 rounded-lg bg-primary hover:bg-[#0040b0] text-white font-medium text-xs shadow-sm transition"
                           >
-                            {paying ? "付款中..." : "收取尾款"}
+                            {paying ? "Processing payment..." : "Collect balance"}
                           </button>
                         </>
                       ) : (
                         <span className="text-emerald-700 font-semibold px-2 py-1 bg-emerald-100 rounded">
-                          ✓ 已全數結清 (Paid)
+                          ✓ Fully settled (Paid)
                         </span>
                       )}
                     </div>
@@ -279,14 +279,14 @@ export default function ErpPage() {
           <section className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
               <ArrowRightLeft className="w-4 h-4 text-emerald-600" />
-              <span>跨倉調撥 (總量守恆)</span>
+              <span>Warehouse transfer (stock conserved)</span>
             </h3>
-            <p className="text-xs text-stone-500">驗證A倉扣量與B倉增量原子對稱，總庫存不增不減</p>
+            <p className="text-xs text-stone-500">An atomic transfer deducts from the source and adds to the destination, preserving total stock.</p>
 
             <form onSubmit={handleTransfer} className="space-y-4 text-xs">
               <div>
-                <label className="block font-medium text-stone-700 mb-1">調撥商品</label>
-                <select aria-label="調撥商品"
+                <label className="block font-medium text-stone-700 mb-1">Transfer item</label>
+                <select aria-label="Transfer item"
                   value={transferItem}
                   onChange={(e) => setTransferItem(e.target.value)}
                   className="w-full rounded-lg border border-stone-300 p-2 text-xs"
@@ -301,8 +301,8 @@ export default function ErpPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-medium text-stone-700 mb-1">來源倉庫</label>
-                  <select aria-label="來源倉庫"
+                  <label className="block font-medium text-stone-700 mb-1">Source warehouse</label>
+                  <select aria-label="Source warehouse"
                     value={fromWh}
                     onChange={(e) => setFromWh(e.target.value)}
                     className="w-full rounded-lg border border-stone-300 p-2 text-xs"
@@ -314,8 +314,8 @@ export default function ErpPage() {
                 </div>
 
                 <div>
-                  <label className="block font-medium text-stone-700 mb-1">目的倉庫</label>
-                  <select aria-label="目的倉庫"
+                  <label className="block font-medium text-stone-700 mb-1">Destination warehouse</label>
+                  <select aria-label="Destination warehouse"
                     value={toWh}
                     onChange={(e) => setToWh(e.target.value)}
                     className="w-full rounded-lg border border-stone-300 p-2 text-xs"
@@ -328,8 +328,8 @@ export default function ErpPage() {
               </div>
 
               <div>
-                <label className="block font-medium text-stone-700 mb-1">調撥數量 (件)</label>
-                <input aria-label="調撥數量 (件)"
+                <label className="block font-medium text-stone-700 mb-1">Transfer quantity (units)</label>
+                <input aria-label="Transfer quantity (units)"
                   type="number"
                   min="1"
                   value={transferQty}
@@ -344,16 +344,16 @@ export default function ErpPage() {
                 disabled={transferring}
                 className="w-full py-2.5 rounded-lg bg-primary hover:bg-[#0040b0] text-white font-medium text-xs transition shadow-sm"
               >
-                {transferring ? "執行調撥中..." : "確認執行庫存調撥"}
+                {transferring ? "Transferring..." : "Confirm stock transfer"}
               </button>
             </form>
           </section>
 
           {/* Box Conversion Ratio Card */}
           <section className="bg-stone-50 rounded-xl border border-stone-200 p-5 space-y-2 text-xs">
-            <h4 className="font-bold text-stone-900">單位換算與箱入倍率</h4>
+            <h4 className="font-bold text-stone-900">Units and pack conversion</h4>
             <p className="text-stone-600">
-              系統內建換算機制，例如「傳感模組十入盒裝」入庫 2 箱，後端自動折算為 20 件庫存入帳，避免採購與現場數量混淆。
+              Pack conversion converts two packs of ten sensor modules into twenty inventory units.
             </p>
           </section>
         </div>

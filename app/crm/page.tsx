@@ -35,7 +35,7 @@ export default function CrmPage() {
       if (json.success) {
         setData(json.data);
       } else {
-        setError(json.error?.message || "載入 CRM 資料失敗");
+        setError(json.error?.message || "Unable to load CRM data");
       }
     } catch (e: any) {
       setError(e.message);
@@ -65,10 +65,10 @@ export default function CrmPage() {
 
       const json: any = await res.json();
       if (json.success) {
-        setSuccess("潛客已一次性成功轉換為客戶、聯絡人與商機！(R02)");
+        setSuccess("Lead converted to account, contact and opportunity.(R02)");
         fetchData();
       } else {
-        setError(json.error?.message || "轉換失敗");
+        setError(json.error?.message || "Conversion failed");
       }
     } catch (err: any) {
       setError(err.message);
@@ -82,10 +82,10 @@ export default function CrmPage() {
     let lossReason = undefined;
 
     if (isWon) {
-      wonReason = prompt("請輸入結案成交原因:", "客戶肯定技術方案與報價合理") || undefined;
+      wonReason = prompt("Enter a reason for winning:", "Customer accepted the proposal and price") || undefined;
       if (!wonReason) return;
     } else if (isLost) {
-      lossReason = prompt("請輸入結案失單原因:", "客戶預算不足延期") || undefined;
+      lossReason = prompt("Enter a reason for losing:", "Delayed due to customer budget") || undefined;
       if (!lossReason) return;
     }
 
@@ -107,10 +107,10 @@ export default function CrmPage() {
 
       const json: any = await res.json();
       if (json.success) {
-        setSuccess(`商機階段推進成功！金額: $${json.data.amount}，機率: ${json.data.probability}%，加權金額: $${json.data.weightedAmount}`);
+        setSuccess(`Opportunity advanced. Amount: : $${json.data.amount}, probability: : ${json.data.probability}%, weighted amount: : $${json.data.weightedAmount}`);
         fetchData();
       } else {
-        setError(json.error?.message || "推進失敗");
+        setError(json.error?.message || "Unable to advance");
       }
     } catch (err: any) {
       setError(err.message);
@@ -125,8 +125,8 @@ export default function CrmPage() {
 
   return (
     <main data-site="crm" className="suite-page suite-crm space-y-7">
-      <WorkspaceHeader brand="RelationDesk" eyebrow="CRM / 客戶工作區" title="把每個機會，推進一步。" description="從第一個聯繫到成交與服務，掌握每段客戶關係的下一步。" onRefresh={fetchData} busy={loading}/>
-      <WorkspaceLinks links={[{href:"#pipeline-summary",label:"業績摘要"},{href:"#opportunities",label:"商機看板"},{href:"#crm-operations",label:"客戶與活動"},{href:"#leads",label:"潛客與客服"}]}/>
+      <WorkspaceHeader brand="RelationDesk" eyebrow="CRM / Customer workspace" title="Move every opportunity forward." description="Track the next step, from first contact through sales and support." onRefresh={fetchData} busy={loading}/>
+      <WorkspaceLinks links={[{href:"#pipeline-summary",label:"Performance summary"},{href:"#opportunities",label:"Opportunity board"},{href:"#crm-operations",label:"Accounts and activities"},{href:"#leads",label:"Leads and support"}]}/>
       {error && (
         <div role="alert" className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -146,40 +146,40 @@ export default function CrmPage() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
-            <h2 className="text-sm font-bold text-stone-900">業績漏斗與加權商機指標</h2>
+            <h2 className="text-sm font-bold text-stone-900">Sales funnel and weighted opportunities</h2>
           </div>
-          <span className="text-xs text-stone-500">成單率: {funnel?.winRatePercent}%</span>
+          <span className="text-xs text-stone-500">Win rate: {funnel?.winRatePercent}%</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
           <div className="p-4 rounded-xl bg-[#f5e9d4] border border-stone-200">
-            <div className="text-xs text-primary font-medium">加權預估業績 (Weighted)</div>
+            <div className="text-xs text-primary font-medium">Weighted forecast (Weighted)</div>
             <div className="text-2xl font-black text-stone-900 mt-1">
               ${funnel?.totalWeightedAmount?.toLocaleString()}
             </div>
-            <div className="text-[10px] text-stone-500 mt-0.5">金額 x 階段成交機率</div>
+            <div className="text-[10px] text-stone-500 mt-0.5">Amount x stage probability</div>
           </div>
 
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200">
-            <div className="text-xs text-stone-600 font-medium">管線總金額 (Pipeline)</div>
+            <div className="text-xs text-stone-600 font-medium">Pipeline value (Pipeline)</div>
             <div className="text-2xl font-black text-stone-900 mt-1">
               ${funnel?.totalPipelineAmount?.toLocaleString()}
             </div>
-            <div className="text-[10px] text-stone-500 mt-0.5">進行中商機面額總和</div>
+            <div className="text-[10px] text-stone-500 mt-0.5">Total open opportunity value</div>
           </div>
 
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200">
-            <div className="text-xs text-stone-600 font-medium">商機案量</div>
-            <div className="text-2xl font-black text-stone-900 mt-1">{funnel?.totalCount} 件</div>
-            <div className="text-[10px] text-stone-500 mt-0.5">各階段進行案量</div>
+            <div className="text-xs text-stone-600 font-medium">Opportunity count</div>
+            <div className="text-2xl font-black text-stone-900 mt-1">{funnel?.totalCount} units</div>
+            <div className="text-[10px] text-stone-500 mt-0.5">Open opportunities by stage</div>
           </div>
 
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200">
-            <div className="text-xs text-stone-600 font-medium">成單率 (Win Rate)</div>
+            <div className="text-xs text-stone-600 font-medium">Win rate (Win Rate)</div>
             <div className="text-2xl font-black text-emerald-700 mt-1">
               {funnel?.winRatePercent}%
             </div>
-            <div className="text-[10px] text-stone-500 mt-0.5">成單 / 總案數</div>
+            <div className="text-[10px] text-stone-500 mt-0.5">Won / total</div>
           </div>
         </div>
       </section>
@@ -188,10 +188,10 @@ export default function CrmPage() {
       <section id="opportunities" className="space-y-4">
         <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
           <Briefcase className="w-4 h-4 text-stone-700" />
-          <span>商機六階段看板 (Opportunities Kanban)</span>
+          <span>Six-stage opportunity board (Opportunities Kanban)</span>
         </h3>
 
-        <div className="opportunity-board" role="region" aria-label="六階段商機看板，可水平捲動" tabIndex={0}>
+        <div className="opportunity-board" role="region" aria-label="Six-stage opportunity board, horizontally scrollable" tabIndex={0}>
           {data?.stages.map((stage: any, idx: number) => {
             const oppsInStage = data.opportunities.filter((o: any) => o.stageId === stage.id);
             const nextStage = data.stages[idx + 1];
@@ -212,7 +212,7 @@ export default function CrmPage() {
                   {/* Opportunities inside this stage */}
                   <div className="space-y-2.5">
                     {oppsInStage.length === 0 ? (
-                      <div className="text-[11px] text-stone-400 text-center py-8">無案件</div>
+                      <div className="text-[11px] text-stone-400 text-center py-8">No opportunities</div>
                     ) : (
                       oppsInStage.map((opp: any) => (
                         <div
@@ -220,19 +220,19 @@ export default function CrmPage() {
                           className="bg-white p-3 rounded-lg border border-stone-200 shadow-sm space-y-2 text-xs"
                         >
                           <div className="font-bold text-stone-900 leading-tight">{opp.name}</div>
-                          <div className="text-[11px] text-stone-500">面額: ${opp.amount?.toLocaleString()}</div>
+                          <div className="text-[11px] text-stone-500">Value: ${opp.amount?.toLocaleString()}</div>
                           <div className="text-xs font-mono font-bold text-primary bg-purple-50 px-2 py-0.5 rounded border border-stone-200">
-                            加權: ${opp.weightedAmount?.toLocaleString()}
+                            Weighted: ${opp.weightedAmount?.toLocaleString()}
                           </div>
 
                           {opp.status === "won" && (
                             <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
-                              ✓ 成交結案
+                              ✓ Close won
                             </span>
                           )}
                           {opp.status === "lost" && (
                             <span className="text-[10px] text-rose-700 font-bold bg-rose-50 px-1.5 py-0.5 rounded">
-                              ✕ 失單結案
+                              ✕ Close lost
                             </span>
                           )}
 
@@ -242,7 +242,7 @@ export default function CrmPage() {
                               disabled={updatingStage}
                               className="w-full mt-1 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-800 text-[10px] font-semibold flex items-center justify-center gap-1 transition"
                             >
-                              <span>推進至 {nextStage.name}</span>
+                              <span>Advance to  {nextStage.name}</span>
                               <ArrowRight className="w-2.5 h-2.5" />
                             </button>
                           )}
@@ -265,7 +265,7 @@ export default function CrmPage() {
         <section className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm space-y-4">
           <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
             <UserPlus className="w-4 h-4 text-primary" />
-            <span>潛客一鍵轉換 (Lead Conversion)</span>
+            <span>Convert a lead (Lead Conversion)</span>
           </h3>
 
           <div className="space-y-3 text-xs">
@@ -281,7 +281,7 @@ export default function CrmPage() {
 
                 {lead.status === "converted" ? (
                   <span className="text-emerald-700 text-[11px] font-semibold bg-emerald-100 px-2 py-0.5 rounded">
-                    ✓ 已轉換成客戶
+                    ✓ Converted to account
                   </span>
                 ) : (
                   <button
@@ -289,7 +289,7 @@ export default function CrmPage() {
                     disabled={convertingLead === lead.id}
                     className="px-3 py-1.5 rounded-lg bg-primary hover:bg-[#0040b0] text-white font-medium text-xs transition"
                   >
-                    {convertingLead === lead.id ? "轉換中..." : "一鍵轉商機"}
+                    {convertingLead === lead.id ? "Converting..." : "Convert to opportunity"}
                   </button>
                 )}
               </div>
@@ -301,7 +301,7 @@ export default function CrmPage() {
         <section className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm space-y-4">
           <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
             <LifeBuoy className="w-4 h-4 text-blue-600" />
-            <span>客服工單與 SLA 計時</span>
+            <span>Support tickets and SLA</span>
           </h3>
 
           <div className="space-y-3 text-xs">
@@ -310,13 +310,13 @@ export default function CrmPage() {
                 <div className="flex items-center justify-between">
                   <span className="font-mono font-bold text-stone-900">{tck.ticketNumber}</span>
                   <span className="text-[10px] px-2 py-0.5 rounded font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                    SLA {tck.slaHours}小時 (扣除週末)
+                    SLA {tck.slaHours}hours (excluding weekends)
                   </span>
                 </div>
                 <div className="text-stone-700 font-medium">{tck.subject}</div>
                 <div className="text-[11px] text-stone-500">
-                  優先級: {tck.priority} | 狀態: {tck.status}
-                  <p className={tck.isSlaBreached ? "text-red-700" : "text-stone-500"}>SLA 截止：{tck.dueAt ? new Date(tck.dueAt).toLocaleString("zh-TW", {timeZone:"Asia/Taipei"}) : "無資料"} {tck.isSlaBreached ? "（已逾期）" : ""}</p>
+                  Priority: {tck.priority} | Status: {tck.status}
+                  <p className={tck.isSlaBreached ? "text-red-700" : "text-stone-500"}>SLA Due: {tck.dueAt ? new Date(tck.dueAt).toLocaleString("en-US", {timeZone:"Asia/Taipei"}) : "No data"} {tck.isSlaBreached ? "(overdue)" : ""}</p>
                 </div>
               </div>
             ))}

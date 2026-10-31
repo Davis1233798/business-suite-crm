@@ -5,7 +5,7 @@ import { SuiteFrame } from "@/components/suite-frame";
 export const metadata: Metadata = {
   title: "Business Suite Portfolio | Six Business Systems",
   description:
-    "包含 MES製造管理、ERP進銷存財、POS門市收銀、CRM客戶關係、餐飲桌位KDS、電商網路通路的完整持久化全端架構與業務規則實作。",
+    "Explore manufacturing, operations, retail, customer relationships, dining and commerce in six connected business workspaces.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

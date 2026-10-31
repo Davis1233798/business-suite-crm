@@ -48,7 +48,7 @@ const cookieName = "suite_session"
 const demoCookie = "suite_demo_space"
 const testPassword = "SuiteDemo!2026"
 
-var demoPeople = []struct{ Email, Name, Role, Scope string }{{"admin@suite.test", "管理員", "admin", "back"}, {"office@suite.test", "後台作業員", "operator", "back"}, {"front@suite.test", "前台人員", "operator", "front"}, {"viewer@suite.test", "唯讀查詢", "readonly", "back"}}
+var demoPeople = []struct{ Email, Name, Role, Scope string }{{"admin@suite.test", "Administrator", "admin", "back"}, {"office@suite.test", "Back-office operator", "operator", "back"}, {"front@suite.test", "Front-office operator", "operator", "front"}, {"viewer@suite.test", "Read-only viewer", "readonly", "back"}}
 
 func token() string {
 	b := make([]byte, 32)
@@ -132,7 +132,7 @@ func openDB(file string) (*sql.DB, error) {
 	if !hasOrder {
 		files = append(files, "0002_dining_takeout.sql")
 	}
-	files = append(files, "0003_mes_projection.sql", "0004_station_identity.sql")
+	files = append(files, "0003_mes_projection.sql", "0004_station_identity.sql", "0005_traffic_lab.sql")
 	for _, f := range files {
 		b, err := migrations.ReadFile("migrations/" + f)
 		if err != nil {
@@ -161,7 +161,7 @@ func ok(w http.ResponseWriter, data any) {
 }
 func body(r *http.Request, v any) error {
 	if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
-		return errors.New("需要 JSON 請求")
+		return errors.New("A JSON request is required")
 	}
 	dec := json.NewDecoder(io.LimitReader(r.Body, 65537))
 	dec.DisallowUnknownFields()
@@ -170,7 +170,7 @@ func body(r *http.Request, v any) error {
 	}
 	var extra any
 	if e := dec.Decode(&extra); e != io.EOF {
-		return errors.New("無效 JSON")
+		return errors.New("Invalid JSON")
 	}
 	return nil
 }
@@ -201,12 +201,12 @@ func sessionCookieName(r *http.Request) string {
 func (a *App) identity(r *http.Request) (*Identity, error) {
 	c, e := r.Cookie(sessionCookieName(r))
 	if e != nil || len(c.Value) != 64 {
-		return nil, errors.New("請先登入")
+		return nil, errors.New("Please sign in")
 	}
 	var id Identity
 	e = a.db.QueryRow(`SELECT u.id,a.organization_id,a.email,u.display_name FROM station_sessions s JOIN station_accounts a ON a.user_id=s.user_id JOIN users u ON u.id=a.user_id WHERE s.token_hash=? AND s.expires_at>? AND a.disabled=0`, digest(c.Value), time.Now().UnixMilli()).Scan(&id.UserID, &id.OrganizationID, &id.Email, &id.Name)
 	if e != nil {
-		return nil, errors.New("登入已失效")
+		return nil, errors.New("Your session has expired")
 	}
 	rows, e := a.db.Query("SELECT site,role,scope,enabled FROM station_grants WHERE user_id=?", id.UserID)
 	if e != nil {
@@ -233,7 +233,7 @@ func (a *App) session(w http.ResponseWriter, r *http.Request, user, site string)
 }
 func (a *App) initializeDemo(space string) error {
 	if len(space) != 64 {
-		return errors.New("測試空間無效")
+		return errors.New("Invalid demo workspace")
 	}
 	org := "org_test_" + space
 	var n int
@@ -252,7 +252,7 @@ func (a *App) initializeDemo(space string) error {
 		return e
 	}
 	defer tx.Rollback()
-	if _, e = tx.Exec("INSERT OR IGNORE INTO organizations(id,name,slug) VALUES(?,?,?)", org, "獨立測試企業", org); e != nil {
+	if _, e = tx.Exec("INSERT OR IGNORE INTO organizations(id,name,slug) VALUES(?,?,?)", org, "Isolated demo organization", org); e != nil {
 		return e
 	}
 	for _, p := range demoPeople {
@@ -294,13 +294,13 @@ func (a *App) auth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method != "POST" {
-		fail(w, 405, "不支援的方法")
+		fail(w, 405, "Method not allowed")
 		return
 	}
 	if action == "logout" {
 		name := sessionCookieName(r)
 		if name == "" {
-			fail(w, 400, "請指定要登出的站台")
+			fail(w, 400, "Specify the workspace to sign out of")
 			return
 		}
 		if c, e := r.Cookie(name); e == nil {
@@ -311,7 +311,7 @@ func (a *App) auth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if action != "login" {
-		fail(w, 404, "找不到操作")
+		fail(w, 404, "Operation not found")
 		return
 	}
 	var input struct {
@@ -320,7 +320,7 @@ func (a *App) auth(w http.ResponseWriter, r *http.Request) {
 		Site     string `json:"site"`
 	}
 	if body(r, &input) != nil || !knownSite(input.Site) || len(input.Email) > 254 || len(input.Password) > 256 {
-		fail(w, 400, "登入資料格式錯誤")
+		fail(w, 400, "Invalid sign-in data")
 		return
 	}
 	space := ""
@@ -338,28 +338,28 @@ func (a *App) auth(w http.ResponseWriter, r *http.Request) {
 	now := time.Now().UnixMilli()
 	_, e := a.db.Exec(`INSERT INTO station_login_limits(key,attempts,reset_at) VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET attempts=CASE WHEN reset_at<? THEN 1 ELSE attempts+1 END,reset_at=CASE WHEN reset_at<? THEN ? ELSE reset_at END`, limitKey, now+900000, now, now, now+900000)
 	if e != nil {
-		fail(w, 503, "登入服務暫時無法使用")
+		fail(w, 503, "Sign-in service is temporarily unavailable")
 		return
 	}
 	var attempts int
 	if a.db.QueryRow("SELECT attempts FROM station_login_limits WHERE key=?", limitKey).Scan(&attempts) != nil || attempts > 20 {
-		fail(w, 429, "登入嘗試過多，請稍後再試")
+		fail(w, 429, "Too many sign-in attempts. Try again later")
 		return
 	}
 	if e = a.initializeDemo(space); e != nil {
 		log.Print(e)
-		fail(w, 500, "無法建立測試空間")
+		fail(w, 500, "Unable to create demo workspace")
 		return
 	}
 	cookie(w, r, demoCookie, space, 604800)
 	var user, hash string
 	e = a.db.QueryRow(`SELECT a.user_id,a.password_hash FROM station_accounts a JOIN station_grants g ON g.user_id=a.user_id WHERE a.organization_id=? AND a.email=? AND a.disabled=0 AND g.site=? AND g.enabled=1`, org, strings.ToLower(strings.TrimSpace(input.Email)), input.Site).Scan(&user, &hash)
 	if e != nil || !passwordOK(input.Password, hash) {
-		fail(w, 401, "帳號、密碼或分站授權不符")
+		fail(w, 401, "Invalid credentials or workspace access")
 		return
 	}
 	if e = a.session(w, r, user, input.Site); e != nil {
-		fail(w, 500, "無法建立登入工作階段")
+		fail(w, 500, "Unable to create session")
 		return
 	}
 	ok(w, map[string]bool{"signedIn": true})
@@ -381,26 +381,27 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			scheme = "https"
 		}
 		if origin != "" && origin != scheme+"://"+r.Host {
-			fail(w, 403, "不允許跨來源操作")
+			fail(w, 403, "Cross-origin operations are not allowed")
 			return
 		}
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		if a.db.Ping() != nil {
-			fail(w, 503, "資料庫無法使用")
+			fail(w, 503, "Database unavailable")
 			return
 		}
 		ok(w, map[string]string{"backend": "go", "status": "ready"})
 	})
 	mux.HandleFunc("/api/auth/{action}", a.auth)
+	mux.HandleFunc("/api/stations/{site}/traffic", a.trafficAPI)
 	mux.HandleFunc("/api/stations/{site}/{action}", a.stationAPI)
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
-		fail(w, 501, "此舊版業務 API 尚未移植到 Go；不會轉送至 TypeScript")
+		fail(w, 501, "This legacy business API has not been migrated to Go")
 	})
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
-			fail(w, 405, "不支援的方法")
+			fail(w, 405, "Method not allowed")
 			return
 		}
 		clean := filepath.Clean(r.URL.Path)

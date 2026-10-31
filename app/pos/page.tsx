@@ -49,7 +49,7 @@ export default function PosPage() {
       if (json.success) {
         setData(json.data);
       } else {
-        setError(json.error?.message || "載入 POS 資料失敗");
+        setError(json.error?.message || "Unable to load POS data");
       }
     } catch (e: any) {
       setError(e.message);
@@ -136,11 +136,11 @@ export default function PosPage() {
       if (json.success) {
         checkoutAttempt.current = null;
         setLastReceipt(json.data);
-        setSuccessMsg(`結帳成功！單號: ${json.data.receiptNumber}，應收 $${json.data.totalAmount}，實收 $${json.data.tenderAmount}，找零 $${json.data.changeAmount}`);
+        setSuccessMsg(`Checkout complete. Receipt: ${json.data.receiptNumber}, due $${json.data.totalAmount}, tendered $${json.data.tenderAmount}, change $${json.data.changeAmount}`);
         setCart([]);
         fetchData();
       } else {
-        setError(json.error?.message || "結帳失敗");
+        setError(json.error?.message || "Checkout failed");
       }
     } catch (err: any) {
       setError(err.message);
@@ -157,7 +157,7 @@ export default function PosPage() {
       addToCart(match);
       setBarcodeInput("");
     } else {
-      setError(`找不到條碼為 ${barcodeInput} 的商品`);
+      setError(`No product found for barcode  ${barcodeInput}  `);
     }
   };
 
@@ -168,8 +168,8 @@ export default function PosPage() {
 
   return (
     <main data-site="pos" className="suite-page suite-pos space-y-6">
-      <WorkspaceHeader brand="CounterPoint" eyebrow="POS / 門市工作台" title="專心服務，俐落結帳。" description="選取商品、確認購物籃，再完成收款。每一筆交易都能追溯。" onRefresh={fetchData} busy={loading}/>
-      <WorkspaceLinks links={[{href:"#register",label:"商品與收銀"},{href:"#pos-operations",label:"班別與交易"}]}/>
+      <WorkspaceHeader brand="CounterPoint" eyebrow="POS / Retail workspace" title="Better service. Simpler checkout." description="Select products, review the cart and collect payment. Every transaction is traceable." onRefresh={fetchData} busy={loading}/>
+      <WorkspaceLinks links={[{href:"#register",label:"Products and checkout"},{href:"#pos-operations",label:"Shifts and transactions"}]}/>
       {error && (
         <div role="alert" className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -185,7 +185,7 @@ export default function PosPage() {
       )}
 
       {/* POS Layout: Left Catalog Grid, Right Cashier Cart */}
-      <section className="register-context" aria-label="班別摘要"><span>當前班別 <b>{shift?.status === "open" ? "營業中" : "尚未開班"}</b></span><span>開班準備金 <b>${shift?.openingCash?.toLocaleString() ?? "—"}</b></span><span>日報淨額 <b>${report?.netSales?.toLocaleString() ?? "—"}</b></span></section>
+      <section className="register-context" aria-label="Shift summary"><span>Current shift <b>{shift?.status === "open" ? "Open" : "No open shift"}</b></span><span>Opening cash <b>${shift?.openingCash?.toLocaleString() ?? "—"}</b></span><span>Daily net sales <b>${report?.netSales?.toLocaleString() ?? "—"}</b></span></section>
       <div id="register" className="register-layout grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 7 Cols: Catalog & Barcode Scanner */}
         <div className="lg:col-span-7 space-y-6">
@@ -195,9 +195,9 @@ export default function PosPage() {
               <div className="relative flex-1">
                 <Barcode className="w-4 h-4 absolute left-3 top-3 text-stone-400" />
                 <input
-                  aria-label="商品條碼"
+                  aria-label="Product barcode"
                   type="text"
-                  placeholder="掃描或輸入商品條碼 (例: 4710001001 / 4710001002)"
+                  placeholder="Scan or enter product barcode (e.g.: 4710001001 / 4710001002)"
                   value={barcodeInput}
                   onChange={(e) => setBarcodeInput(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-300 text-xs font-mono focus:ring-1 focus:ring-primary"
@@ -207,7 +207,7 @@ export default function PosPage() {
                 type="submit"
                 className="px-4 py-2 rounded-lg bg-primary hover:bg-[#0040b0] text-white text-xs font-medium transition"
               >
-                加入
+                Add
               </button>
             </form>
           </div>
@@ -229,7 +229,7 @@ export default function PosPage() {
                 <div className="flex items-center justify-between">
                   <span className="font-bold font-mono text-sm text-stone-900">${item.price}</span>
                   <span className="text-[10px] text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded">
-                    存:{item.stockQuantity}
+                    Stock:{item.stockQuantity}
                   </span>
                 </div>
               </button>
@@ -238,8 +238,8 @@ export default function PosPage() {
 
           {/* Quick Demo Instruction */}
           <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200 text-xs text-amber-900 space-y-1">
-            <div className="font-bold">驗收場景:</div>
-            <div>點擊「冷萃咖啡」2次（原價 $200），於右側購物籃輸入行折扣 $10（應收 $190），點擊「$200」實收找零 $10 完成收銀。</div>
+            <div className="font-bold">Example workflow:</div>
+            <div>Add two cold brew coffees ($200), apply a $10 line discount ($190 due), then tender $200 for $10 change.</div>
           </div>
         </div>
 
@@ -249,7 +249,7 @@ export default function PosPage() {
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <h3 className="font-bold text-stone-900 text-sm flex items-center gap-1.5">
                 <Receipt className="w-4 h-4 text-stone-600" />
-                <span>收銀購物籃</span>
+                <span>Checkout cart</span>
               </h3>
               {cart.length > 0 && (
                 <button
@@ -257,7 +257,7 @@ export default function PosPage() {
                   className="text-[11px] text-stone-400 hover:text-stone-700 flex items-center gap-1"
                 >
                   <Trash2 className="w-3 h-3" />
-                  <span>清空</span>
+                  <span>Clear</span>
                 </button>
               )}
             </div>
@@ -266,7 +266,7 @@ export default function PosPage() {
             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
               {cart.length === 0 ? (
                 <div className="text-center py-10 text-stone-400 text-xs">
-                  購物籃為空，請點選左側商品加入
+                  Your cart is empty. Select a product to begin.
                 </div>
               ) : (
                 cart.map((line) => (
@@ -283,9 +283,9 @@ export default function PosPage() {
 
                     <div className="flex items-center justify-between pt-1 text-[11px]">
                       <div className="flex items-center gap-2">
-                        <span>折讓:</span>
+                        <span>Discount:</span>
                         <input
-                          aria-label={`${line.item.name} 行折扣`}
+                          aria-label={`${line.item.name} Line discount`}
                           type="number"
                           min="0"
                           max={line.item.price * line.quantity}
@@ -297,7 +297,7 @@ export default function PosPage() {
 
                       <div className="flex items-center gap-1.5">
                         <button
-                          aria-label={`減少 ${line.item.name} 數量`}
+                          aria-label={`Decrease ${line.item.name} Quantity`}
                           onClick={() => updateQuantity(line.item.id, -1)}
                           className="w-6 h-6 rounded bg-stone-200 hover:bg-stone-300 flex items-center justify-center"
                         >
@@ -305,7 +305,7 @@ export default function PosPage() {
                         </button>
                         <span className="w-6 text-center font-mono font-bold">{line.quantity}</span>
                         <button
-                          aria-label={`增加 ${line.item.name} 數量`}
+                          aria-label={`Increase ${line.item.name} Quantity`}
                           onClick={() => updateQuantity(line.item.id, 1)}
                           className="w-6 h-6 rounded bg-stone-200 hover:bg-stone-300 flex items-center justify-center"
                         >
@@ -323,22 +323,22 @@ export default function PosPage() {
           <div className="border-t border-stone-100 pt-4 space-y-4">
             <div className="space-y-1.5 text-xs text-stone-600">
               <div className="flex justify-between">
-                <span>小計:</span>
+                <span>Subtotal:</span>
                 <span className="font-mono font-bold text-stone-900">${subtotal}</span>
               </div>
               <div className="flex justify-between text-rose-600">
-                <span>折扣分攤:</span>
+                <span>Allocated discount:</span>
                 <span className="font-mono font-bold">-${totalDiscount}</span>
               </div>
               <div className="flex justify-between text-base font-extrabold text-stone-900 pt-1 border-t border-dashed border-stone-200">
-                <span>應收總額:</span>
+                <span>Total due:</span>
                 <span className="font-mono text-amber-700 text-lg">${totalAmount}</span>
               </div>
             </div>
 
             {/* Quick Tender Cash Buttons */}
             <div className="space-y-2">
-              <div className="text-[11px] text-stone-500 font-medium">顧客實收現金 (Tender):</div>
+              <div className="text-[11px] text-stone-500 font-medium">Cash tendered (Tender):</div>
               <div className="grid grid-cols-4 gap-1.5">
                 {[totalAmount, 200, 500, 1000].map((amt, idx) => (
                   <button
@@ -356,7 +356,7 @@ export default function PosPage() {
                 ))}
               </div>
               <div className="flex items-center justify-between text-xs pt-1">
-                <span className="text-stone-500">找零金額:</span>
+                <span className="text-stone-500">Change due:</span>
                 <span className="font-mono font-black text-emerald-700 text-base">${changeAmount}</span>
               </div>
             </div>
@@ -366,7 +366,7 @@ export default function PosPage() {
               disabled={cart.length === 0 || checkingOut || tenderAmount < totalAmount || !data?.shifts.some((entry: any) => entry.status === "open")}
               className="w-full py-3 rounded-xl bg-primary hover:bg-[#0040b0] disabled:opacity-50 text-white font-bold text-sm shadow-md transition"
             >
-              {checkingOut ? "收銀結帳中..." : `確認收款 $${tenderAmount} (找零 $${changeAmount})`}
+              {checkingOut ? "Checking out..." : `Confirm payment $${tenderAmount} (Change $${changeAmount})`}
             </button>
           </div>
         </div>
