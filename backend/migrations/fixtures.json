@@ -1,0 +1,948 @@
+{
+  "crm_accounts": [
+    {
+      "id": "crm_acc_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "示範雲端客戶 A（虛構）",
+      "industry": "雲端軟體",
+      "phone": "DEMO-PHONE-001",
+      "email": "contact@customer-a.example.test",
+      "owner_id": "usr_org_go_fixture_admin",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "crm_activities": [
+    {
+      "id": "crm_act_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "activity_type": "meeting",
+      "subject": "客戶方案需求第二階段審核會議",
+      "due_date": "2026-11-05 14:00",
+      "completed": 0,
+      "completed_at": null,
+      "owner_id": "usr_org_go_fixture_admin",
+      "account_id": "crm_acc_01_org_go_fixture",
+      "contact_id": "crm_cont_01_org_go_fixture",
+      "opportunity_id": "crm_opp_01_org_go_fixture",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "crm_consents": [
+    {
+      "id": "crm_csnt_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "contact_id": "crm_cont_01_org_go_fixture",
+      "email": "person-a@customer-a.example.test",
+      "marketing_email_allowed": 1,
+      "updated_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "crm_contacts": [
+    {
+      "id": "crm_cont_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "account_id": "crm_acc_01_org_go_fixture",
+      "name": "示範聯絡人 A",
+      "email": "person-a@customer-a.example.test",
+      "phone": "DEMO-PHONE-002",
+      "title": "雲端架構處長",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "crm_leads": [
+    {
+      "id": "crm_lead_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "示範聯絡人 B",
+      "company": "示範製造潛客 B（虛構）",
+      "email": "person-b@prospect-b.example.test",
+      "phone": "DEMO-PHONE-003",
+      "status": "new",
+      "assigned_to": "usr_org_go_fixture_admin",
+      "converted_account_id": null,
+      "converted_contact_id": null,
+      "converted_opportunity_id": null,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "crm_opportunities": [
+    {
+      "id": "crm_opp_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "智慧製造數位雙生升級案",
+      "account_id": "crm_acc_01_org_go_fixture",
+      "primary_contact_id": "crm_cont_01_org_go_fixture",
+      "owner_id": "usr_org_go_fixture_admin",
+      "stage_id": "crm_stg_03_org_go_fixture",
+      "amount": 100000,
+      "weighted_amount": 60000,
+      "probability": 60,
+      "close_date": "2026-11-30",
+      "status": "open",
+      "loss_reason": null,
+      "won_reason": null,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "crm_quote_items": [
+    {
+      "id": "crm_qti_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "quote_id": "crm_qt_01_org_go_fixture",
+      "item_name": "數位雙生現場架設與授權 (年度)",
+      "quantity": 1,
+      "unit_price": 100000,
+      "line_total": 100000,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "crm_quotes": [
+    {
+      "id": "crm_qt_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "quote_number": "QT-202610-001",
+      "opportunity_id": "crm_opp_01_org_go_fixture",
+      "version": 1,
+      "total_amount": 100000,
+      "status": "approved",
+      "is_locked": 1,
+      "approved_at": "2026-10-25 10:00:00",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "crm_stages": [
+    {
+      "id": "crm_stg_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "初步接觸",
+      "position": 1,
+      "probability": 10,
+      "is_won": 0,
+      "is_lost": 0
+    },
+    {
+      "id": "crm_stg_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "需求確認",
+      "position": 2,
+      "probability": 30,
+      "is_won": 0,
+      "is_lost": 0
+    },
+    {
+      "id": "crm_stg_03_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "方案報價",
+      "position": 3,
+      "probability": 60,
+      "is_won": 0,
+      "is_lost": 0
+    },
+    {
+      "id": "crm_stg_04_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "商務談判",
+      "position": 4,
+      "probability": 80,
+      "is_won": 0,
+      "is_lost": 0
+    },
+    {
+      "id": "crm_stg_05_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "成功結案",
+      "position": 5,
+      "probability": 100,
+      "is_won": 1,
+      "is_lost": 0
+    },
+    {
+      "id": "crm_stg_06_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "結案失單",
+      "position": 6,
+      "probability": 0,
+      "is_won": 0,
+      "is_lost": 1
+    }
+  ],
+  "crm_tickets": [
+    {
+      "id": "crm_tck_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "ticket_number": "TCK-202610-001",
+      "customer_id": "crm_acc_01_org_go_fixture",
+      "contact_id": "crm_cont_01_org_go_fixture",
+      "subject": "API 對接金鑰權限授權配置詢問",
+      "priority": "high",
+      "status": "in_progress",
+      "sla_hours": 24,
+      "is_sla_breached": 0,
+      "resolved_at": null,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "dining_kitchen_tickets": [
+    {
+      "id": "din_kt_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "order_id": "din_ord_01_org_go_fixture",
+      "order_item_id": "din_oi_01_org_go_fixture",
+      "station": "cold_bar",
+      "item_name": "手熬黑糖珍珠鮮奶",
+      "quantity": 1,
+      "modifiers_text": "微糖 (3分)",
+      "status": "received",
+      "urgent_flag": 0,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_kt_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "order_id": "din_ord_01_org_go_fixture",
+      "order_item_id": "din_oi_02_org_go_fixture",
+      "station": "hot_kitchen",
+      "item_name": "松露黑醋牛肝菌燉飯 (前菜分享版)",
+      "quantity": 1,
+      "modifiers_text": "",
+      "status": "received",
+      "urgent_flag": 0,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "dining_locations": [
+    {
+      "id": "din_loc_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "TableCraft 示範餐廳 A",
+      "service_fee_rate": 10,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "dining_menu_items": [
+    {
+      "id": "din_menu_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "炭烤特級肋眼牛排",
+      "category": "排餐",
+      "price": 450,
+      "is_sold_out": 0,
+      "station": "hot_kitchen",
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_menu_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "松露黑醋牛肝菌燉飯",
+      "category": "主食",
+      "price": 320,
+      "is_sold_out": 0,
+      "station": "hot_kitchen",
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_menu_03_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "手熬黑糖珍珠鮮奶",
+      "category": "飲品",
+      "price": 100,
+      "is_sold_out": 0,
+      "station": "cold_bar",
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_menu_04_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "限量法式主廚威靈頓牛排",
+      "category": "限定",
+      "price": 680,
+      "is_sold_out": 1,
+      "station": "hot_kitchen",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "dining_modifier_groups": [
+    {
+      "id": "din_modg_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "甜度 (必選)",
+      "min_selection": 1,
+      "max_selection": 1,
+      "is_required": 1,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_modg_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "加料升級",
+      "min_selection": 0,
+      "max_selection": 3,
+      "is_required": 0,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "dining_modifier_options": [
+    {
+      "id": "din_modo_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "group_id": "din_modg_01_org_go_fixture",
+      "name": "無糖 (0分)",
+      "additional_price": 0,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_modo_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "group_id": "din_modg_01_org_go_fixture",
+      "name": "微糖 (3分)",
+      "additional_price": 0,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_modo_03_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "group_id": "din_modg_01_org_go_fixture",
+      "name": "正常糖 (全糖)",
+      "additional_price": 0,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_modo_04_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "group_id": "din_modg_02_org_go_fixture",
+      "name": "雙份手工黑糖珍珠",
+      "additional_price": 10,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_modo_05_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "group_id": "din_modg_02_org_go_fixture",
+      "name": "日式特濃奶蓋",
+      "additional_price": 20,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "dining_order_items": [
+    {
+      "id": "din_oi_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "order_id": "din_ord_01_org_go_fixture",
+      "menu_item_id": "din_menu_03_org_go_fixture",
+      "item_name": "手熬黑糖珍珠鮮奶",
+      "unit_price": 100,
+      "quantity": 1,
+      "modifiers_json": "[{\"name\":\"微糖 (3分)\"}]",
+      "line_total": 100,
+      "status": "preparing",
+      "cancelled_reason": null,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_oi_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "order_id": "din_ord_01_org_go_fixture",
+      "menu_item_id": "din_menu_02_org_go_fixture",
+      "item_name": "松露黑醋牛肝菌燉飯 (前菜分享版)",
+      "unit_price": 200,
+      "quantity": 1,
+      "modifiers_json": null,
+      "line_total": 200,
+      "status": "preparing",
+      "cancelled_reason": null,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "dining_orders": [
+    {
+      "id": "din_ord_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "session_id": "din_sess_a2_org_go_fixture",
+      "order_type": "dine_in",
+      "takeout_number": null,
+      "subtotal": 300,
+      "service_charge": 30,
+      "total_amount": 330,
+      "status": "placed",
+      "idempotency_key": null,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "dining_table_sessions": [
+    {
+      "id": "din_sess_a2_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "table_id": "din_tbl_a2_org_go_fixture",
+      "session_token": "token_tbl_a2_org_go_fixture",
+      "guest_count": 2,
+      "status": "active",
+      "opened_at": "2026-10-30 16:30:21",
+      "closed_at": null
+    }
+  ],
+  "dining_tables": [
+    {
+      "id": "din_tbl_a1_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "location_id": "din_loc_01_org_go_fixture",
+      "table_number": "A1",
+      "capacity": 4,
+      "status": "vacant",
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_tbl_a2_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "location_id": "din_loc_01_org_go_fixture",
+      "table_number": "A2",
+      "capacity": 4,
+      "status": "occupied",
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "din_tbl_b1_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "location_id": "din_loc_01_org_go_fixture",
+      "table_number": "B1",
+      "capacity": 2,
+      "status": "vacant",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_customers": [
+    {
+      "id": "erp_cust_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "code": "CUST-DEMO-01",
+      "name": "示範企業客戶 A（虛構）",
+      "contact_email": "procure@customer-a.example.test",
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_fiscal_periods": [
+    {
+      "id": "erp_fp_202610_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "period_code": "2026-10",
+      "start_date": "2026-10-01",
+      "end_date": "2026-10-31",
+      "is_closed": 0,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_invoices": [
+    {
+      "id": "erp_inv_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "invoice_number": "INV-202610-001",
+      "invoice_type": "payable",
+      "partner_type": "supplier",
+      "partner_id": "erp_sup_01_org_go_fixture",
+      "total_amount": 1000,
+      "paid_amount": 400,
+      "status": "partially_paid",
+      "due_date": "2026-11-15",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_item_costing": [
+    {
+      "id": "erp_cost_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "item_id": "erp_item_01_org_go_fixture",
+      "total_quantity": 20,
+      "total_cost": 3000,
+      "moving_average_cost": 150,
+      "updated_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_items": [
+    {
+      "id": "erp_item_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "sku": "SKU-SENS-01",
+      "name": "工業級溫濕度傳感器 (單件)",
+      "unit": "PCS",
+      "box_conversion_ratio": 1,
+      "category": "電子元件",
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "erp_item_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "sku": "SKU-SENS-BOX10",
+      "name": "工業級溫濕度傳感器 (十入盒裝)",
+      "unit": "BOX",
+      "box_conversion_ratio": 10,
+      "category": "箱裝成品",
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_journal_entries": [
+    {
+      "id": "erp_je_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "entry_number": "JE-202610-001",
+      "entry_date": "2026-10-15",
+      "description": "期初股本與銀行存款開帳",
+      "reference_doc": "INITIAL_CAPITAL",
+      "status": "posted",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_journal_lines": [
+    {
+      "id": "erp_jel_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "journal_id": "erp_je_01_org_go_fixture",
+      "account_code": "1101",
+      "account_name": "銀行存款 (Bank Deposit)",
+      "debit_amount": 100000,
+      "credit_amount": 0,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "erp_jel_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "journal_id": "erp_je_01_org_go_fixture",
+      "account_code": "3101",
+      "account_name": "普通股股本 (Common Stock)",
+      "debit_amount": 0,
+      "credit_amount": 100000,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_purchase_order_lines": [
+    {
+      "id": "erp_pol_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "po_id": "erp_po_01_org_go_fixture",
+      "item_id": "erp_item_01_org_go_fixture",
+      "quantity": 10,
+      "unit_price": 100,
+      "received_quantity": 10,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_purchase_orders": [
+    {
+      "id": "erp_po_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "po_number": "PO-202610-001",
+      "supplier_id": "erp_sup_01_org_go_fixture",
+      "status": "approved",
+      "total_amount": 1000,
+      "rejected_reason": null,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_sales_order_lines": [
+    {
+      "id": "erp_sol_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "so_id": "erp_so_01_org_go_fixture",
+      "item_id": "erp_item_01_org_go_fixture",
+      "quantity": 5,
+      "unit_price": 300,
+      "shipped_quantity": 0,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_sales_orders": [
+    {
+      "id": "erp_so_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "so_number": "SO-202610-001",
+      "customer_id": "erp_cust_01_org_go_fixture",
+      "quote_reference": "QT-2026-001",
+      "status": "confirmed",
+      "total_amount": 1500,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_stock_ledger": [
+    {
+      "id": "erp_stk_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "item_id": "erp_item_01_org_go_fixture",
+      "warehouse_id": "erp_wh_01_org_go_fixture",
+      "change_type": "purchase_receipt",
+      "quantity_change": 10,
+      "balance_after": 10,
+      "unit_cost": 100,
+      "total_value": 1000,
+      "reference_doc": "PO-202610-001",
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "erp_stk_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "item_id": "erp_item_01_org_go_fixture",
+      "warehouse_id": "erp_wh_01_org_go_fixture",
+      "change_type": "purchase_receipt",
+      "quantity_change": 10,
+      "balance_after": 20,
+      "unit_cost": 200,
+      "total_value": 3000,
+      "reference_doc": "PO-202610-002",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_suppliers": [
+    {
+      "id": "erp_sup_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "code": "SUP-DEMO-01",
+      "name": "示範供應商 A（虛構）",
+      "contact_email": "sales@supplier-a.example.test",
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "erp_warehouses": [
+    {
+      "id": "erp_wh_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "code": "WH-TP",
+      "name": "台北總倉",
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "erp_wh_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "code": "WH-TC",
+      "name": "台中轉運倉",
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "mes_bom_items": [
+    {
+      "id": "mes_item_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "bom_version_id": "mes_bom_v1_org_go_fixture",
+      "material_sku": "RAW-ALUM-6061",
+      "material_name": "航太級6061原鋁塊",
+      "quantity_per_unit": 2,
+      "unit": "PCS",
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "mes_item_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "bom_version_id": "mes_bom_v1_org_go_fixture",
+      "material_sku": "RAW-THERMAL-PASTE",
+      "material_name": "高效能導熱膏",
+      "quantity_per_unit": 1,
+      "unit": "TUBE",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "mes_bom_versions": [
+    {
+      "id": "mes_bom_v1_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "product_id": "mes_prd_01_org_go_fixture",
+      "version": 1,
+      "status": "active",
+      "is_active": 1,
+      "notes": "標準生產BOM v1 (每件耗原鋁2件、散熱膏1管)",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "mes_material_lots": [
+    {
+      "id": "mes_lot_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "lot_number": "LOT-202610-AL01",
+      "material_sku": "RAW-ALUM-6061",
+      "initial_quantity": 500,
+      "current_quantity": 300,
+      "status": "available",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "mes_operations": [
+    {
+      "id": "mes_op_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "work_order_id": "mes_wo_01_org_go_fixture",
+      "sequence": 10,
+      "work_center_id": "mes_wc_01_org_go_fixture",
+      "name": "精密CNC切削成型",
+      "standard_minutes_per_unit": 1,
+      "status": "pending",
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "mes_op_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "work_order_id": "mes_wo_01_org_go_fixture",
+      "sequence": 20,
+      "work_center_id": "mes_wc_02_org_go_fixture",
+      "name": "陽極硬化處理",
+      "standard_minutes_per_unit": 1,
+      "status": "pending",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "mes_products": [
+    {
+      "id": "mes_prd_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "sku": "PRD-AL-HEAT",
+      "name": "鋁合金散熱模組 (Alloy Heat Module A)",
+      "unit": "PCS",
+      "status": "active",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "mes_work_centers": [
+    {
+      "id": "mes_wc_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "code": "WC-CNC-01",
+      "name": "精密五軸CNC切削中心",
+      "capacity_minutes_per_day": 480,
+      "status": "active",
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "mes_wc_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "code": "WC-ANODIZE-01",
+      "name": "陽極氧化表面處理線",
+      "capacity_minutes_per_day": 480,
+      "status": "active",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "mes_work_order_materials": [
+    {
+      "id": "mes_wom_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "work_order_id": "mes_wo_01_org_go_fixture",
+      "material_lot_id": "mes_lot_01_org_go_fixture",
+      "material_sku": "RAW-ALUM-6061",
+      "issued_quantity": 200,
+      "returned_quantity": 10,
+      "net_quantity": 190,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "mes_work_orders": [
+    {
+      "id": "mes_wo_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "order_no": "WO-202610-001",
+      "product_id": "mes_prd_01_org_go_fixture",
+      "bom_version_id": "mes_bom_v1_org_go_fixture",
+      "target_quantity": 100,
+      "completed_quantity": 0,
+      "scrapped_quantity": 0,
+      "status": "released",
+      "materials_staged": 1,
+      "scheduled_minutes": 480,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "pos_catalog_items": [
+    {
+      "id": "pos_item_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "barcode": "4710001001",
+      "name": "精品冷萃美式咖啡 (大杯)",
+      "price": 100,
+      "stock_quantity": 100,
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "pos_item_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "barcode": "4710001002",
+      "name": "手作黑糖肉桂捲",
+      "price": 90,
+      "stock_quantity": 50,
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "pos_item_03_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "barcode": "4710001003",
+      "name": "衣索比亞莊園濾掛禮盒",
+      "price": 350,
+      "stock_quantity": 20,
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "pos_registers": [
+    {
+      "id": "pos_reg_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "store_id": "pos_store_01_org_go_fixture",
+      "register_number": "REG-01",
+      "name": "1號收銀櫃檯",
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "pos_shifts": [
+    {
+      "id": "pos_shift_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "store_id": "pos_store_01_org_go_fixture",
+      "register_id": "pos_reg_01_org_go_fixture",
+      "cashier_id": "usr_org_go_fixture_op",
+      "opening_cash": 1000,
+      "closing_cash": null,
+      "expected_cash": null,
+      "cash_discrepancy": null,
+      "status": "open",
+      "opened_at": "2026-10-30 16:30:21",
+      "closed_at": null,
+      "notes": null
+    }
+  ],
+  "pos_stores": [
+    {
+      "id": "pos_store_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "code": "STORE-XY",
+      "name": "示範門市 A（虛構）",
+      "address": "示範地址 A（非實際地址）",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "shop_categories": [
+    {
+      "id": "shop_cat_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "極簡機能服飾",
+      "slug": "apparel",
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "shop_cat_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "都市生活配件",
+      "slug": "accessories",
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "shop_order_items": [
+    {
+      "id": "shop_oi_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "order_id": "shop_ord_01_org_go_fixture",
+      "variant_id": "shop_var_01_org_go_fixture",
+      "product_name": "極簡防風連帽機能外套",
+      "variant_title": "曜石黑 / M",
+      "sku": "ML-HD-BLK-M",
+      "unit_price": 100,
+      "quantity": 2,
+      "line_total": 200,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "shop_orders": [
+    {
+      "id": "shop_ord_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "order_number": "ORD-202610-001",
+      "user_id": null,
+      "customer_email": "buyer@sites.test",
+      "shipping_address_json": "{\"name\":\"示範收件人 A\",\"city\":\"台北市\",\"address\":\"示範路段 A（非實際地址）\",\"phone\":\"DEMO-PHONE-004\"}",
+      "subtotal": 200,
+      "discount_amount": 20,
+      "shipping_fee": 60,
+      "total_amount": 240,
+      "payment_status": "paid",
+      "fulfillment_status": "shipped",
+      "tracking_number": "TRK-TW-888999",
+      "idempotency_key": null,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "shop_products": [
+    {
+      "id": "shop_prd_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "name": "極簡防風連帽機能外套",
+      "slug": "minimalist-tech-hoodie",
+      "description": "採用防潑水三層透氣微孔科技面料，適合都會通勤與戶外輕機能穿搭。",
+      "category_id": "shop_cat_01_org_go_fixture",
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "shop_promotions": [
+    {
+      "id": "shop_promo_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "code": "SAVE10",
+      "description": "秋季全站 9 折優惠券",
+      "discount_type": "percentage",
+      "discount_value": 10,
+      "min_spend": 0,
+      "expires_at": null,
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "shop_promo_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "code": "EXPIRED50",
+      "description": "已過期優惠券",
+      "discount_type": "fixed",
+      "discount_value": 50,
+      "min_spend": 200,
+      "expires_at": "2020-01-01 00:00:00",
+      "is_active": 0,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "shop_variants": [
+    {
+      "id": "shop_var_01_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "product_id": "shop_prd_01_org_go_fixture",
+      "sku": "ML-HD-BLK-M",
+      "title": "曜石黑 / M",
+      "color": "曜石黑",
+      "size": "M",
+      "price": 100,
+      "stock_quantity": 20,
+      "reserved_quantity": 0,
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    },
+    {
+      "id": "shop_var_02_org_go_fixture",
+      "organization_id": "org_go_fixture",
+      "product_id": "shop_prd_01_org_go_fixture",
+      "sku": "ML-HD-BLK-L",
+      "title": "曜石黑 / L",
+      "color": "曜石黑",
+      "size": "L",
+      "price": 100,
+      "stock_quantity": 1,
+      "reserved_quantity": 0,
+      "is_active": 1,
+      "created_at": "2026-10-30 16:30:21"
+    }
+  ],
+  "mes_projection_revisions": [
+    {
+      "organization_id": "org_go_fixture",
+      "work_order_id": "mes_wo_01_org_go_fixture",
+      "revision": 4
+    }
+  ]
+}

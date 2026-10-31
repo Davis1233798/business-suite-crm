@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1793341383571,
+      "tag": "0000_spicy_bromley",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1793342815925,
+      "tag": "0001_transaction_guards",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793342815926,
+      "tag": "0002_dining_takeout",
+      "breakpoints": true
+    }
+  ]
+}

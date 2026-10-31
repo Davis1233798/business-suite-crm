@@ -1,0 +1,18 @@
+{
+  "web": ["gateway"],
+  "web-mes": ["web"],
+  "web-erp": ["web"],
+  "web-pos": ["web"],
+  "web-crm": ["web"],
+  "web-dining": ["web"],
+  "web-shop": ["web"],
+  "gateway": ["redis", "rabbitmq", "postgres-0", "postgres-1", "timeseries", "mqtt"],
+  "fulfillment": ["redis", "rabbitmq", "postgres-0", "postgres-1", "timeseries", "mqtt"],
+  "collector": ["redis", "rabbitmq", "postgres-0", "postgres-1", "timeseries", "mqtt"],
+  "redis": [],
+  "rabbitmq": [],
+  "postgres-0": [],
+  "postgres-1": [],
+  "timeseries": [],
+  "mqtt": []
+}

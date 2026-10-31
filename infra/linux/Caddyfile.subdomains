@@ -1,0 +1,57 @@
+(public_headers) {
+    encode gzip
+    request_body {
+        max_size 6MB
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+    @dispatch path /api/platform/dispatch
+    respond @dispatch 404
+}
+portfolio.tsplsimulator.dpdns.org {
+    import public_headers
+    reverse_proxy web:8080
+}
+platform.tsplsimulator.dpdns.org {
+    import public_headers
+    redir / /platform 302
+    reverse_proxy web:8080
+}
+mes.tsplsimulator.dpdns.org {
+    import public_headers
+    redir / /mes 302
+    reverse_proxy web:8080
+}
+erp.tsplsimulator.dpdns.org {
+    import public_headers
+    redir / /erp 302
+    reverse_proxy web:8080
+}
+pos.tsplsimulator.dpdns.org {
+    import public_headers
+    redir / /pos 302
+    reverse_proxy web:8080
+}
+crm.tsplsimulator.dpdns.org {
+    import public_headers
+    redir / /crm 302
+    reverse_proxy web:8080
+}
+dining.tsplsimulator.dpdns.org {
+    import public_headers
+    redir / /dining 302
+    reverse_proxy web:8080
+}
+shop.tsplsimulator.dpdns.org {
+    import public_headers
+    redir / /shop 302
+    reverse_proxy web:8080
+}
+commerce.tsplsimulator.dpdns.org {
+    import public_headers
+    redir / /commerce 302
+    reverse_proxy web:8080
+}

@@ -1,0 +1,17 @@
+# Activate only after the eight new DNS records resolve to this Linux host.
+services:
+  edge:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    environment:
+      BASE_DOMAIN: ${BASE_DOMAIN:?set the selected registered BASE_DOMAIN}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./linux/Caddyfile.sites:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      web: {condition: service_healthy}
+volumes:
+  caddy-data:
+  caddy-config:

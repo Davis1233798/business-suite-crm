@@ -1,0 +1,73 @@
+x-station: &station
+  build:
+    context: ..
+    dockerfile: infra/linux/Dockerfile.web
+  restart: unless-stopped
+  environment: &station-env
+    INFRA_GATEWAY_URL: http://gateway:8080
+    INFRA_GATEWAY_TOKEN: ${GATEWAY_TOKEN}
+  volumes: ["web-data:/srv/app/.data"]
+  depends_on:
+    web: {condition: service_healthy}
+  healthcheck:
+    test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/health').then(r=>{if(!r.ok)process.exit(1)})"]
+    interval: 10s
+    retries: 20
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: infra/linux/Dockerfile.web
+    restart: unless-stopped
+    environment:
+      INFRA_GATEWAY_URL: http://gateway:8080
+      INFRA_GATEWAY_TOKEN: ${GATEWAY_TOKEN}
+      PLATFORM_CONTROL_URL: http://control:8091
+      STATION_PROXY: 'true'
+    ports: ["127.0.0.1:8090:8080"]
+    volumes: ["web-data:/srv/app/.data"]
+    depends_on:
+      gateway: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 10s
+      retries: 20
+  web-mes:
+    <<: *station
+    environment: {<<: *station-env, SUITE_STATION: mes}
+  web-erp:
+    <<: *station
+    environment: {<<: *station-env, SUITE_STATION: erp}
+  web-pos:
+    <<: *station
+    environment: {<<: *station-env, SUITE_STATION: pos}
+  web-crm:
+    <<: *station
+    environment: {<<: *station-env, SUITE_STATION: crm}
+  web-dining:
+    <<: *station
+    environment: {<<: *station-env, SUITE_STATION: dining}
+  web-shop:
+    <<: *station
+    environment: {<<: *station-env, SUITE_STATION: shop}
+  control:
+    build:
+      context: .
+      dockerfile: control/Dockerfile
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      PLATFORM_TOKEN: ${PLATFORM_TOKEN:?set a dedicated PLATFORM_TOKEN}
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-business-suite}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - control-audit:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8091/health', timeout=2)"]
+      interval: 5s
+      retries: 20
+volumes:
+  web-data:
+  control-audit:

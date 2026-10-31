@@ -1,0 +1,64 @@
+{
+  "repository": "https://github.com/VoltAgent/awesome-design-md",
+  "commit": "fcc70284932276d085f01ef9f83edde90b1258cb",
+  "downloaded_on": "2026-10-30",
+  "kind": "design reference documents, not executable UI templates",
+  "license": "LICENSE",
+  "files": [
+    {
+      "brand": "airtable",
+      "path": "references/airtable/DESIGN.md",
+      "source": "https://raw.githubusercontent.com/VoltAgent/awesome-design-md/fcc70284932276d085f01ef9f83edde90b1258cb/design-md/airtable/DESIGN.md",
+      "sha256": "1d225e511213044d3c705bde50265ad010932bfd8a15740a144dd4f480128889",
+      "bytes": 35266
+    },
+    {
+      "brand": "linear.app",
+      "path": "references/linear.app/DESIGN.md",
+      "source": "https://raw.githubusercontent.com/VoltAgent/awesome-design-md/fcc70284932276d085f01ef9f83edde90b1258cb/design-md/linear.app/DESIGN.md",
+      "sha256": "30bd30e72c48a16e4bdbd010f2d1c85fab657c6fae3cc85389399aab10f9cb5f",
+      "bytes": 24354
+    },
+    {
+      "brand": "nike",
+      "path": "references/nike/DESIGN.md",
+      "source": "https://raw.githubusercontent.com/VoltAgent/awesome-design-md/fcc70284932276d085f01ef9f83edde90b1258cb/design-md/nike/DESIGN.md",
+      "sha256": "d2a3d363665839e2ddc15c91b8a9f3e92b1962ff55a7ca5d964ab3bb88b8186c",
+      "bytes": 36697
+    },
+    {
+      "brand": "sap",
+      "path": "references/sap/DESIGN.md",
+      "source": "https://raw.githubusercontent.com/VoltAgent/awesome-design-md/fcc70284932276d085f01ef9f83edde90b1258cb/design-md/sap/DESIGN.md",
+      "sha256": "f14c951d6112efce488f56d189b9bcdf58f5b9f87ae1e2ee68f062e6a6967d97",
+      "bytes": 33615
+    },
+    {
+      "brand": "shopify",
+      "path": "references/shopify/DESIGN.md",
+      "source": "https://raw.githubusercontent.com/VoltAgent/awesome-design-md/fcc70284932276d085f01ef9f83edde90b1258cb/design-md/shopify/DESIGN.md",
+      "sha256": "495e89b8d0a1848ded013c040f7a2ae62077e9d87fc4385350e25dee02ccdb38",
+      "bytes": 27067
+    },
+    {
+      "brand": "starbucks",
+      "path": "references/starbucks/DESIGN.md",
+      "source": "https://raw.githubusercontent.com/VoltAgent/awesome-design-md/fcc70284932276d085f01ef9f83edde90b1258cb/design-md/starbucks/DESIGN.md",
+      "sha256": "e20338ee10226c63cf2588207288c08e12d60754a53f681657adaf364dfe8fa7",
+      "bytes": 37329
+    },
+    {
+      "brand": "vercel",
+      "path": "references/vercel/DESIGN.md",
+      "source": "https://raw.githubusercontent.com/VoltAgent/awesome-design-md/fcc70284932276d085f01ef9f83edde90b1258cb/design-md/vercel/DESIGN.md",
+      "sha256": "d0951b93c2b4ce9840c715c9f9b3e58a386c6c58ae5cc0f804dec3b116b95bd8",
+      "bytes": 41405
+    },
+    {
+      "path": "references/LICENSE",
+      "source": "https://raw.githubusercontent.com/VoltAgent/awesome-design-md/fcc70284932276d085f01ef9f83edde90b1258cb/LICENSE",
+      "sha256": "6d4bdc9a9cf30e7beb593475fdcdbf29f981ea6bd7923f202866145409f87b44",
+      "bytes": 1066
+    }
+  ]
+}

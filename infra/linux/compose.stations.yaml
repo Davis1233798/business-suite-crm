@@ -1,0 +1,19 @@
+services:
+  station:
+    build:
+      context: ..
+      dockerfile: infra/linux/Dockerfile.station
+    restart: unless-stopped
+    environment:
+      SUITE_WEB: /srv/station/web-dist
+      SUITE_DB: /srv/station/data/stations.sqlite
+      SUITE_ADDR: 0.0.0.0:8095
+    volumes:
+      - station-data:/srv/station/data
+    healthcheck:
+      test: ["CMD", "/srv/station/station-server", "--healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+volumes:
+  station-data:

@@ -1,0 +1,11 @@
+FROM node:24-slim
+WORKDIR /srv/app
+ENV NODE_ENV=production HOST=0.0.0.0 PORT=8080
+COPY dist ./dist
+COPY drizzle ./drizzle
+COPY lib/db/sqlite-d1.ts ./lib/db/sqlite-d1.ts
+COPY scripts/serve-linux.mjs ./scripts/serve-linux.mjs
+COPY scripts/station-routing.mjs ./scripts/station-routing.mjs
+RUN mkdir .data && chown -R node:node /srv/app
+USER node
+CMD ["node", "scripts/serve-linux.mjs"]

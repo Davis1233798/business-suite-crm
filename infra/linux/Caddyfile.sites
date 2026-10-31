@@ -1,0 +1,59 @@
+(suite-proxy) {
+    encode gzip
+    request_body {
+        max_size 6MB
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+    @internal path /api/platform/dispatch
+    respond @internal 404
+    reverse_proxy web:8080
+}
+
+{$BASE_DOMAIN} {
+    import suite-proxy
+}
+mes.{$BASE_DOMAIN} {
+    redir / /mes 302
+    import suite-proxy
+}
+erp.{$BASE_DOMAIN} {
+    redir / /erp 302
+    import suite-proxy
+}
+pos.{$BASE_DOMAIN} {
+    redir / /pos 302
+    import suite-proxy
+}
+crm.{$BASE_DOMAIN} {
+    redir / /crm 302
+    import suite-proxy
+}
+dining.{$BASE_DOMAIN} {
+    redir / /dining 302
+    import suite-proxy
+}
+shop.{$BASE_DOMAIN} {
+    redir / /shop 302
+    import suite-proxy
+}
+commerce.{$BASE_DOMAIN} {
+    redir / /commerce 302
+    import suite-proxy
+}
+
+station.{$BASE_DOMAIN} {
+    encode gzip
+    request_body {
+        max_size 6MB
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+    reverse_proxy station:8095
+}

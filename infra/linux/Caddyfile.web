@@ -1,0 +1,14 @@
+{$MAIN_DOMAIN} {
+    encode gzip
+    request_body {
+        max_size 6MB
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+    @internal path /api/platform/dispatch
+    respond @internal 404
+    reverse_proxy web:8080
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "environment": "development",
+  "sites": [
+    { "id": "mes", "name": "ForgeFlow", "path": "/mes", "services": ["web-mes", "collector", "mqtt", "timeseries", "postgres-0", "postgres-1"] },
+    { "id": "erp", "name": "LedgerWorks", "path": "/erp", "services": ["web-erp"] },
+    { "id": "pos", "name": "CounterPoint", "path": "/pos", "services": ["web-pos"] },
+    { "id": "crm", "name": "RelationDesk", "path": "/crm", "services": ["web-crm"] },
+    { "id": "dining", "name": "TableCraft", "path": "/dining", "services": ["web-dining"] },
+    { "id": "shop", "name": "MarketLane", "path": "/shop", "services": ["web-shop", "gateway", "redis", "rabbitmq", "fulfillment", "postgres-0", "postgres-1"] }
+  ]
+}

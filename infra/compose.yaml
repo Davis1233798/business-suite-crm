@@ -1,0 +1,97 @@
+name: business-suite
+x-runtime: &runtime
+  build: ./runtime
+  restart: unless-stopped
+  environment: &environment
+    REDIS_URL: redis://redis:6379/0
+    AMQP_URL: amqp://${SERVICE_USER:?set SERVICE_USER}:${SERVICE_PASSWORD:?set SERVICE_PASSWORD}@rabbitmq:5672/%2F
+    SHARD_0_URL: postgresql://${SERVICE_USER}:${SERVICE_PASSWORD}@postgres-0:5432/business
+    SHARD_1_URL: postgresql://${SERVICE_USER}:${SERVICE_PASSWORD}@postgres-1:5432/business
+    TIMESERIES_URL: postgresql://${SERVICE_USER}:${SERVICE_PASSWORD}@timeseries:5432/industrial
+    GATEWAY_TOKEN: ${GATEWAY_TOKEN:?set GATEWAY_TOKEN}
+    MQTT_USER: ${SERVICE_USER}
+    MQTT_PASSWORD: ${SERVICE_PASSWORD}
+    MQTT_HOST: mqtt
+  depends_on:
+    redis: {condition: service_healthy}
+    rabbitmq: {condition: service_healthy}
+    postgres-0: {condition: service_healthy}
+    postgres-1: {condition: service_healthy}
+    timeseries: {condition: service_healthy}
+    mqtt: {condition: service_started}
+services:
+  gateway:
+    <<: *runtime
+    ports: ["127.0.0.1:8088:8080"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  fulfillment:
+    <<: *runtime
+    command: ["python", "-m", "runtime.consumer"]
+  collector:
+    <<: *runtime
+    command: ["python", "-m", "runtime.telemetry"]
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 20
+  rabbitmq:
+    image: rabbitmq:4.1-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${SERVICE_USER}
+      RABBITMQ_DEFAULT_PASS: ${SERVICE_PASSWORD}
+    volumes: ["rabbit-data:/var/lib/rabbitmq"]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      retries: 20
+  postgres-0:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment: &postgres
+      POSTGRES_USER: ${SERVICE_USER}
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD}
+      POSTGRES_DB: business
+    volumes: ["shard-0:/var/lib/postgresql/data", "./sql/business.sql:/docker-entrypoint-initdb.d/001.sql:ro"]
+    healthcheck: &pghealth
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      retries: 20
+  postgres-1:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment: *postgres
+    volumes: ["shard-1:/var/lib/postgresql/data", "./sql/business.sql:/docker-entrypoint-initdb.d/001.sql:ro"]
+    healthcheck: *pghealth
+  timeseries:
+    image: timescale/timescaledb:2.19.3-pg17
+    restart: unless-stopped
+    environment:
+      <<: *postgres
+      POSTGRES_DB: industrial
+    volumes: ["timeseries:/var/lib/postgresql/data", "./sql/timeseries.sql:/docker-entrypoint-initdb.d/001.sql:ro"]
+    healthcheck: *pghealth
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    restart: unless-stopped
+    environment:
+      MQTT_USER: ${SERVICE_USER}
+      MQTT_PASSWORD: ${SERVICE_PASSWORD}
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - 'mosquitto_passwd -b -c /tmp/passwords "$$MQTT_USER" "$$MQTT_PASSWORD"; chown mosquitto:mosquitto /tmp/passwords; chmod 600 /tmp/passwords; exec mosquitto -c /mosquitto/config/mosquitto.conf'
+    volumes: ["./mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro", "mqtt-data:/mosquitto/data"]
+volumes:
+  rabbit-data:
+  shard-0:
+  shard-1:
+  timeseries:
+  mqtt-data:
