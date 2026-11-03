@@ -23,10 +23,10 @@ test('Windows desktop CI checks identity before packaging its artifact', () => {
 test('release image build has web assets and waits for both validations', () => {
   assert.match(crm, /node --test tests\/desktop-workflow\.test\.cjs/);
   assert.match(publish, /needs: \[crm, windows-desktop\]/);
-  assert.match(publish, /if: github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'/);
   const steps = ['npm run install:ci', 'npm run web:build', 'docker build -f infra/linux/Dockerfile.station'];
   const positions = steps.map((step) => publish.indexOf(step));
   assert.ok(positions.every((position) => position >= 0));
   assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
   assert.match(fs.readFileSync('infra/linux/Dockerfile.station', 'utf8'), /COPY web-dist\//);
+  assert.match(publish, /- name: Publish CRM image on main\n        if: github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'/);
 });
