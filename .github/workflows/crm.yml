@@ -48,6 +48,8 @@ jobs:
       - run: npm run install:ci
       - run: npx tsc --noEmit
       - run: npm test
+      - name: Verify desktop and container release workflow boundaries
+        run: node --test tests/desktop-workflow.test.cjs
       - run: go -C backend test -race -timeout=20m ./...
       - run: npm run web:build
       - name: Build CRM image
@@ -74,6 +76,11 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm run install:ci
+      - run: npm run web:build
       - name: Build CRM image after all platform checks
         run: docker build -f infra/linux/Dockerfile.station -t crm-release:${GITHUB_SHA} .
       - name: Publish CRM image on main
