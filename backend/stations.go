@@ -228,7 +228,7 @@ func convertCRMLead(w http.ResponseWriter, r *http.Request, a *App, identity *Id
 		return
 	}
 	parsed, err := time.Parse("2006-01-02", input.CloseDate)
-	if input.Amount == nil || *input.Amount < 0 || *input.Amount > (int64(^uint64(0)>>1)-50)/100 || err != nil || parsed.Format("2006-01-02") != input.CloseDate {
+	if input.Amount == nil || *input.Amount < 0 || *input.Amount > 9007199254740991 || err != nil || parsed.Format("2006-01-02") != input.CloseDate {
 		fail(w, 400, "Amount must be a non-negative integer and close date must be a valid YYYY-MM-DD date")
 		return
 	}
@@ -275,7 +275,7 @@ func convertCRMLead(w http.ResponseWriter, r *http.Request, a *App, identity *Id
 	}
 	companyName := company.String
 	if companyName == "" {
-		companyName = name + " 個人企業"
+		companyName = name
 	}
 	accountID, contactID, opportunityID := "lead-account:"+input.LeadID, "lead-contact:"+input.LeadID, "lead-opportunity:"+input.LeadID
 	weighted := (amount*int64(probability) + 50) / 100
@@ -283,7 +283,7 @@ func convertCRMLead(w http.ResponseWriter, r *http.Request, a *App, identity *Id
 		_, err = tx.Exec(`INSERT INTO crm_contacts(id,organization_id,account_id,name,email,phone) VALUES(?,?,?,?,?,?)`, contactID, identity.OrganizationID, accountID, name, email, phone)
 	}
 	if err == nil {
-		_, err = tx.Exec(`INSERT INTO crm_opportunities(id,organization_id,name,account_id,primary_contact_id,owner_id,stage_id,amount,weighted_amount,probability,close_date,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,'open')`, opportunityID, identity.OrganizationID, companyName+" - 潛客商機開拓", accountID, contactID, owner, stageID, amount, weighted, probability, input.CloseDate)
+		_, err = tx.Exec(`INSERT INTO crm_opportunities(id,organization_id,name,account_id,primary_contact_id,owner_id,stage_id,amount,weighted_amount,probability,close_date,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,'open')`, opportunityID, identity.OrganizationID, companyName+" - Opportunity", accountID, contactID, owner, stageID, amount, weighted, probability, input.CloseDate)
 	}
 	if err == nil {
 		_, err = tx.Exec(`UPDATE crm_leads SET converted_account_id=?,converted_contact_id=?,converted_opportunity_id=? WHERE organization_id=? AND id=? AND status='converted'`, accountID, contactID, opportunityID, identity.OrganizationID, input.LeadID)
