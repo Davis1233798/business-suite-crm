@@ -34,7 +34,11 @@ func seedFixtures(tx *sql.Tx, org string) error {
 			for _, k := range keys {
 				v := row[k]
 				if s, yes := v.(string); yes {
-					v = strings.ReplaceAll(s, "org_go_fixture", org)
+					if s == "usr_org_go_fixture_admin" {
+						v = org + "_admin"
+					} else {
+						v = strings.ReplaceAll(s, "org_go_fixture", org)
+					}
 				}
 				args = append(args, v)
 				marks = append(marks, "?")

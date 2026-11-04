@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
+	"time"
 )
 
 type Dataset struct {
@@ -101,6 +103,24 @@ func (a *App) stationAPI(w http.ResponseWriter, r *http.Request) {
 		ok(w, out)
 		return
 	}
+	if site == "crm" && action == "leads" && r.Method == http.MethodPost {
+		if !crmCanMutate(w, g) {
+			return
+		}
+		createCRMLead(w, r, a, id)
+		return
+	}
+	if site == "crm" && (action == "lead-qualify" || action == "lead-convert") && r.Method == http.MethodPost {
+		if !crmCanMutate(w, g) {
+			return
+		}
+		if action == "lead-qualify" {
+			qualifyCRMLead(w, r, a, id)
+		} else {
+			convertCRMLead(w, r, a, id)
+		}
+		return
+	}
 	if action == "users" {
 		if g.Role != "admin" || g.Scope != "back" {
 			fail(w, 403, "Only workspace administrators can manage accounts")
@@ -129,6 +149,157 @@ func (a *App) stationAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fail(w, 501, "This operation has not been migrated to Go. No changes were made")
+}
+
+func crmCanMutate(w http.ResponseWriter, g *Grant) bool {
+	if g.Scope != "back" || (g.Role != "operator" && g.Role != "admin") {
+		fail(w, http.StatusForbidden, "CRM lead operations require a back-office operator")
+		return false
+	}
+	return true
+}
+
+var crmEmailPattern = regexp.MustCompile(`^[^@\s]+@[^@\s]+\.[^@\s]+$`)
+
+func createCRMLead(w http.ResponseWriter, r *http.Request, a *App, id *Identity) {
+	var input struct {
+		Name    string `json:"name"`
+		Company string `json:"company"`
+		Email   string `json:"email"`
+		Phone   string `json:"phone"`
+	}
+	if body(r, &input) != nil {
+		fail(w, 400, "Invalid lead data")
+		return
+	}
+	input.Name = strings.TrimSpace(input.Name)
+	input.Company = strings.TrimSpace(input.Company)
+	input.Email = strings.ToLower(strings.TrimSpace(input.Email))
+	input.Phone = strings.TrimSpace(input.Phone)
+	if input.Name == "" || len(input.Name) > 150 || len(input.Company) > 200 || !crmEmailPattern.MatchString(input.Email) || len(input.Email) > 254 || len(input.Phone) > 50 {
+		fail(w, 400, "Provide a lead name and valid email; text fields exceed their limits")
+		return
+	}
+	leadID := "lead:" + token()
+	_, err := a.db.Exec(`INSERT INTO crm_leads(id,organization_id,name,company,email,phone,status,assigned_to) VALUES(?,?,?,?,?,?,'new',?)`, leadID, id.OrganizationID, input.Name, nullable(input.Company), input.Email, nullable(input.Phone), id.UserID)
+	if err != nil {
+		fail(w, 409, "Unable to create lead")
+		return
+	}
+	okStatus(w, http.StatusCreated, map[string]string{"id": leadID, "status": "new"})
+}
+
+func nullable(s string) any {
+	if s == "" {
+		return nil
+	}
+	return s
+}
+
+func qualifyCRMLead(w http.ResponseWriter, r *http.Request, a *App, id *Identity) {
+	var input struct {
+		LeadID string `json:"leadId"`
+	}
+	if body(r, &input) != nil || input.LeadID == "" {
+		fail(w, 400, "A lead ID is required")
+		return
+	}
+	result, err := a.db.Exec(`UPDATE crm_leads SET status='qualified' WHERE organization_id=? AND id=? AND status='new'`, id.OrganizationID, input.LeadID)
+	if err != nil {
+		fail(w, 500, "Unable to qualify lead")
+		return
+	}
+	changed, _ := result.RowsAffected()
+	if changed != 1 {
+		fail(w, 409, "Lead is missing or is not new")
+		return
+	}
+	ok(w, map[string]string{"id": input.LeadID, "status": "qualified"})
+}
+
+func convertCRMLead(w http.ResponseWriter, r *http.Request, a *App, identity *Identity) {
+	var input struct {
+		LeadID    string `json:"leadId"`
+		Amount    *int64 `json:"amount"`
+		CloseDate string `json:"closeDate"`
+	}
+	if body(r, &input) != nil || input.LeadID == "" {
+		fail(w, 400, "A lead ID, amount and close date are required")
+		return
+	}
+	parsed, err := time.Parse("2006-01-02", input.CloseDate)
+	if input.Amount == nil || *input.Amount < 0 || *input.Amount > 9007199254740991 || err != nil || parsed.Format("2006-01-02") != input.CloseDate {
+		fail(w, 400, "Amount must be a non-negative integer and close date must be a valid YYYY-MM-DD date")
+		return
+	}
+	amount := *input.Amount
+	tx, err := a.db.Begin()
+	if err != nil {
+		fail(w, 503, "Unable to begin conversion")
+		return
+	}
+	defer tx.Rollback()
+	var name, email string
+	var company, phone, assigned sql.NullString
+	err = tx.QueryRow(`SELECT name,company,email,phone,assigned_to FROM crm_leads WHERE organization_id=? AND id=? AND status='qualified'`, identity.OrganizationID, input.LeadID).Scan(&name, &company, &email, &phone, &assigned)
+	if err != nil {
+		fail(w, 409, "Lead is missing or is not qualified")
+		return
+	}
+	owner := assigned.String
+	if owner == "" {
+		owner = identity.UserID
+	}
+	var ownerCount int
+	err = tx.QueryRow(`SELECT count(*) FROM station_accounts a JOIN station_grants g ON g.user_id=a.user_id WHERE a.user_id=? AND a.organization_id=? AND a.disabled=0 AND g.site='crm' AND g.enabled=1 AND g.scope='back' AND g.role IN ('admin','operator')`, owner, identity.OrganizationID).Scan(&ownerCount)
+	if err != nil || ownerCount != 1 {
+		fail(w, 400, "Lead owner is not an active back-office CRM user in this organization")
+		return
+	}
+	var stageID string
+	var probability int
+	err = tx.QueryRow(`SELECT id,probability FROM crm_stages WHERE organization_id=? AND is_won=0 AND is_lost=0 ORDER BY position,id LIMIT 1`, identity.OrganizationID).Scan(&stageID, &probability)
+	if err != nil || probability < 0 || probability > 100 {
+		fail(w, 409, "No valid CRM opportunity stage is configured")
+		return
+	}
+	claimed, err := tx.Exec(`UPDATE crm_leads SET status='converted' WHERE organization_id=? AND id=? AND status='qualified'`, identity.OrganizationID, input.LeadID)
+	if err != nil {
+		fail(w, 409, "Lead conversion could not be claimed")
+		return
+	}
+	rows, _ := claimed.RowsAffected()
+	if rows != 1 {
+		fail(w, 409, "Lead has already been converted")
+		return
+	}
+	companyName := company.String
+	if companyName == "" {
+		companyName = name
+	}
+	accountID, contactID, opportunityID := "lead-account:"+input.LeadID, "lead-contact:"+input.LeadID, "lead-opportunity:"+input.LeadID
+	weighted := (amount*int64(probability) + 50) / 100
+	if _, err = tx.Exec(`INSERT INTO crm_accounts(id,organization_id,name,email,phone,owner_id) VALUES(?,?,?,?,?,?)`, accountID, identity.OrganizationID, companyName, email, phone, owner); err == nil {
+		_, err = tx.Exec(`INSERT INTO crm_contacts(id,organization_id,account_id,name,email,phone) VALUES(?,?,?,?,?,?)`, contactID, identity.OrganizationID, accountID, name, email, phone)
+	}
+	if err == nil {
+		_, err = tx.Exec(`INSERT INTO crm_opportunities(id,organization_id,name,account_id,primary_contact_id,owner_id,stage_id,amount,weighted_amount,probability,close_date,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,'open')`, opportunityID, identity.OrganizationID, companyName+" - Opportunity", accountID, contactID, owner, stageID, amount, weighted, probability, input.CloseDate)
+	}
+	if err == nil {
+		_, err = tx.Exec(`UPDATE crm_leads SET converted_account_id=?,converted_contact_id=?,converted_opportunity_id=? WHERE organization_id=? AND id=? AND status='converted'`, accountID, contactID, opportunityID, identity.OrganizationID, input.LeadID)
+	}
+	if err == nil {
+		err = tx.Commit()
+	}
+	if err != nil {
+		fail(w, 409, "Conversion failed; no records were created")
+		return
+	}
+	ok(w, map[string]string{"accountId": accountID, "contactId": contactID, "opportunityId": opportunityID})
+}
+
+func okStatus(w http.ResponseWriter, status int, data any) {
+	writeJSON(w, status, map[string]any{"success": true, "data": data})
 }
 func (a *App) manageUser(w http.ResponseWriter, r *http.Request, id *Identity, site string) {
 	var input struct {
