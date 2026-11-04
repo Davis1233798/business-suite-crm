@@ -58,6 +58,9 @@ func TestCRMLeadLifecycleAuthorizationPersistenceAndAtomicConversion(t *testing.
 	}
 	convertPath := "/api/stations/crm/lead-convert"
 	convert := map[string]any{"leadId": leadID, "amount": 87500, "closeDate": "2027-03-31"}
+ if response, _ := crmLeadRequest(a, http.MethodPost, convertPath, map[string]any{"leadId": leadID, "amount": int64(9007199254740992), "closeDate": "2027-03-31"}, operator...); response.StatusCode != http.StatusBadRequest {
+  t.Fatalf("amount beyond browser integer precision accepted: %d", response.StatusCode)
+ }
 	if r, _ = crmLeadRequest(a, http.MethodPost, convertPath, convert, front...); r.StatusCode != http.StatusForbidden {
 		t.Fatalf("front conversion allowed: %d", r.StatusCode)
 	}
