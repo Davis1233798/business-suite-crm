@@ -230,7 +230,6 @@ const traditionalChinese:Record<string,string> = {
   "request_error": "請求錯誤",
   "Company": "公司",
   "Phone": "電話",
-  "Email": "電子郵件",
   "Lead qualification and conversion": "潛客資格確認與轉換",
   "Create persisted leads, qualify them, then convert them to an account, contact and opportunity.": "建立潛客並確認資格，再轉換為客戶、聯絡人與商機。",
   "Lead name": "潛客姓名",
