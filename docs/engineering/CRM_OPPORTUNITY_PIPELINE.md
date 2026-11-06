@@ -22,8 +22,9 @@ belong to that organization. Client identity fields are rejected.
 - Require the expected current stage so stale browser tabs cannot overwrite a
   concurrent transition. Retry the same actor/key/payload by returning the
   stored result; key reuse with different input or actor is a conflict.
-- Calculate weighted amount using exact bounded integer arithmetic with
-  explicitly documented rounding; retain the existing nonnegative minor-unit
+- Calculate weighted amount using half-up integer rounding,
+  `(amount * probability + 50) / 100`, for amounts in 0..9007199254740991
+  and probability in 0..100, matching lead conversion. Retain the existing minor-unit
   amount. Do not silently change amount, owner, account or close date.
 - Stage, probability, status, reasons, structured before/after audit and retry
   result commit atomically. An injected late audit/retry failure must leave
