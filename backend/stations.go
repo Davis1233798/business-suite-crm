@@ -17,7 +17,7 @@ type Dataset struct {
 }
 
 var datasets = map[string][]Dataset{
-	"crm": {{"accounts", "crm_accounts", "Customers", nil}, {"contacts", "crm_contacts", "Contacts", nil}, {"leads", "crm_leads", "Leads", []string{"id", "name", "company", "status"}}, {"opportunities", "crm_opportunities", "Opportunities", nil}, {"activities", "crm_activities", "Activities", nil}, {"tickets", "crm_tickets", "Support tickets", []string{"id", "subject", "status", "priority", "created_at"}}, {"quotes", "crm_quotes", "Quotes", nil}, {"quoteItems", "crm_quote_items", "Quote items", nil}},
+	"crm": {{"accounts", "crm_accounts", "Customers", nil}, {"contacts", "crm_contacts", "Contacts", nil}, {"leads", "crm_leads", "Leads", []string{"id", "name", "company", "status"}}, {"opportunities", "crm_opportunities", "Opportunities", nil}, {"stages", "crm_stages", "Pipeline stages", nil}, {"activities", "crm_activities", "Activities", nil}, {"tickets", "crm_tickets", "Support tickets", []string{"id", "subject", "status", "priority", "created_at"}}, {"quotes", "crm_quotes", "Quotes", nil}, {"quoteItems", "crm_quote_items", "Quote items", nil}},
 }
 
 func camel(s string) string {
