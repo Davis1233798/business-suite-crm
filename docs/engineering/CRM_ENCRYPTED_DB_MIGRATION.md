@@ -18,19 +18,41 @@ for `sqlcipher_export` and hex-key URI handling, and 4.14.0 updates SQLite to
 3.51.3 to fix a WAL-reset corruption bug. The upstream 5.0 beta is explicitly
 not for production.
 
-Before any production migration code, select and pin a maintained binding to
-the official stable SQLCipher 4.x source (or a vendor-supported binding),
-record the exact SQLCipher and SQLite versions, provider, build flags, and
-Windows compiler/toolchain, and verify its license and update process. A
-custom `database/sql` adapter that replaces SQLite with pinned official
-SQLCipher sources is a candidate, not yet a decision. Do not promote the old
-candidate driver merely because its tag exists or its smoke test passes.
+The Windows acceptance probe now evaluates `github.com/mattn/go-sqlite3`
+v1.14.52 (upstream commit
+`b0be46fa28d17ee0b65c79774ac0dad84b6db068`, MIT license) built with its
+`libsqlite3` tag against official SQLCipher v4.20.0 source commit
+`355d4db92d3404e71faa8088d071a71d767807f4` (SQLite 3.54.1, Zetetic BSD 3-Clause
+license). Its upstream release build uses the OpenSSL provider, and the CI
+script pins the source commit and checks the compiled SQLite and runtime cipher
+versions.
+
+Do not use mattn `ConnectHook` to set the key: the driver invokes that hook
+after applying connection PRAGMAs, while SQLCipher requires keying before any
+database operation. Instead, the probe uses SQLCipher's `hexkey` file-URI
+parameter, consumed by `sqlite3_open` while opening each connection, before
+those PRAGMAs. The mattn driver preserves `file:` URIs and requests URI support.
+The Windows test checks the real engine version, encrypted file contents,
+correct-key access on two simultaneously held pool connections, and rejection
+of wrong and missing keys. The database key exists only in the in-process URI
+string; production code must never log that URI or include it in argv or the
+environment.
+
+This is a driver proof, not production approval. Before migration code, review
+the pinned SQLCipher/OpenSSL build, confirm its license notices and the final
+packaged runtime dependencies, and maintain an explicit update process. No
+normal SQLite fallback is acceptable: production startup must fail unless the
+actual SQLCipher runtime reports the expected `cipher_version`. Windows
+packaging must include the exact SQLCipher/OpenSSL runtime files or statically
+link them and test the packaged application with no developer toolchain on
+`PATH`.
 
 Evidence: [mutecomm module publication metadata](https://pkg.go.dev/github.com/mutecomm/go-sqlcipher/v4),
 [v4.4.2 bundled SQLite header](https://github.com/mutecomm/go-sqlcipher/blob/v4.4.2/sqlite3.h),
 [SQLCipher maintainer guidance on Go bindings](https://discuss.zetetic.net/t/sqlcipher-is-supported-in-golang/5738),
-[official SQLCipher releases](https://github.com/sqlcipher/sqlcipher/releases), and
-[official SQLCipher changelog](https://github.com/sqlcipher/sqlcipher/blob/master/CHANGELOG.md).
+[official SQLCipher releases](https://github.com/sqlcipher/sqlcipher/releases),
+[official SQLCipher source/build documentation](https://github.com/sqlcipher/sqlcipher), and
+[mattn/go-sqlite3 releases](https://github.com/mattn/go-sqlite3/releases).
 
 ## Scope and source boundary
 
