@@ -2,6 +2,18 @@ export type Language = 'en' | 'zh-TW';
 export function currentLanguage():Language { return localStorage.getItem('suite-language')==='zh-TW'?'zh-TW':'en'; }
 export function initializeLanguage() { document.documentElement.lang=currentLanguage(); }
 const traditionalChinese:Record<string,string> = {
+  "Opportunity pipeline": "商機階段流程",
+  "Stage changes use the current saved stage to prevent overwriting another operator.": "階段變更會核對目前儲存狀態，避免覆寫其他人員的操作。",
+  "Opportunity": "商機",
+  "Current stage": "目前階段",
+  "Target stage": "目標階段",
+  "Transition reason": "變更原因",
+  "Weighted amount": "加權金額",
+  "Update stage": "更新階段",
+  "Opportunity stage updated": "商機階段已更新",
+  "Pipeline stages": "商機階段",
+  "Saved, but the display could not be refreshed. Reload before submitting another operation.": "已儲存，但畫面無法重新整理。請重新載入後再提交其他操作。",
+
   "Switch system": "切換系統",
   "Choose a workspace": "選擇工作區",
   "No records yet": "尚無資料",
