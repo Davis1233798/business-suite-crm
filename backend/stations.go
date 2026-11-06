@@ -103,6 +103,10 @@ func (a *App) stationAPI(w http.ResponseWriter, r *http.Request) {
 		ok(w, out)
 		return
 	}
+	if site == "crm" && action == "opportunity-stage" && r.Method == http.MethodPost {
+		a.opportunityStage(w, r, id, g)
+		return
+	}
 	if site == "crm" && action == "leads" && r.Method == http.MethodPost {
 		if !crmCanMutate(w, g) {
 			return
