@@ -46,9 +46,13 @@ func TestSQLCipherDriverEncryptsAndRejectsWrongKey(t *testing.T) {
 	}
 
 	good := openSQLCipherTestDB(t, path, hex.EncodeToString(key))
+	var cipherVersion string
+	if err := good.QueryRow(`PRAGMA cipher_version`).Scan(&cipherVersion); err != nil || cipherVersion == "" {
+		t.Fatal("the keyed connection did not report an active SQLCipher engine")
+	}
 	var action string
 	if err := good.QueryRow(`SELECT action FROM audit_events WHERE id='audit-fixture'`).Scan(&action); err != nil || action != "TEST" {
-		t.Fatalf("correct key could not read fixture: action=%q err=%v", action, err)
+		t.Fatal("correct key could not read fixture")
 	}
 	if err := good.Close(); err != nil {
 		t.Fatal("close correctly keyed database:", err)
@@ -64,18 +68,30 @@ func TestSQLCipherDriverEncryptsAndRejectsWrongKey(t *testing.T) {
 		t.Fatal("wrong key unexpectedly read encrypted schema")
 	}
 	_ = bad.Close()
+
+	missing := openSQLCipherTestDBWithoutKey(t, path)
+	if err := missing.QueryRow(`SELECT count(*) FROM sqlite_master`).Scan(&count); err == nil {
+		t.Fatal("a missing key unexpectedly read encrypted schema")
+	}
+	_ = missing.Close()
 }
 
 func openSQLCipherTestDB(t *testing.T, path, key string) *sql.DB {
 	t.Helper()
 	db, err := sql.Open("sqlite3", path+"?_pragma_key="+url.QueryEscape("x'"+key+"'"))
 	if err != nil {
-		t.Fatal("open SQLCipher database:", err)
+		t.Fatal("open SQLCipher database")
 	}
 	db.SetMaxOpenConns(1)
-	if err := db.Ping(); err != nil {
-		_ = db.Close()
-		t.Fatal("initialize SQLCipher connection:", err)
+	return db
+}
+
+func openSQLCipherTestDBWithoutKey(t *testing.T, path string) *sql.DB {
+	t.Helper()
+	db, err := sql.Open("sqlite3", path)
+	if err != nil {
+		t.Fatal("open database without key")
 	}
+	db.SetMaxOpenConns(1)
 	return db
 }

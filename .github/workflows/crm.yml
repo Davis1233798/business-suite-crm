@@ -25,10 +25,10 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - name: Verify real SQLCipher encryption on Windows
-        shell: msys2 {0}
+        shell: pwsh
         run: |
-          export CGO_ENABLED=1
-          export CC=gcc
+          $env:CGO_ENABLED = '1'
+          $env:CC = 'gcc'
           go -C backend test -run '^TestSQLCipherDriverEncryptsAndRejectsWrongKey$' -count=1
       - run: npm run install:ci
       - name: Check CRM desktop identity and data boundaries

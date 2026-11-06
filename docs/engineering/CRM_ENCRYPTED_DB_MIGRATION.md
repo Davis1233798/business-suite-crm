@@ -1,7 +1,36 @@
 # CRM Windows encrypted database migration contract
 
 Status: design and driver acceptance only. No production migration or recovery
-path is implemented by this document.
+path is implemented by this document. The candidate Go driver added for the
+Windows smoke test is not approved for production use pending the library
+decision below.
+
+## SQLCipher library decision gate
+
+Do not ship `github.com/mutecomm/go-sqlcipher/v4 v4.4.2` as the product driver.
+Its module release dates to December 2020; its bundled SQLite header reports
+SQLite 3.33.0 and its bundled SQLCipher implementation is 4.4.2. The SQLCipher
+maintainer states that this is not an official Go driver, is based on an
+outdated SQLCipher version, uses a non-standard crypto provider, and did not
+appear actively maintained at the time of that guidance. Current upstream
+SQLCipher has stable 4.x releases through 4.20.0; 4.19.0 includes security fixes
+for `sqlcipher_export` and hex-key URI handling, and 4.14.0 updates SQLite to
+3.51.3 to fix a WAL-reset corruption bug. The upstream 5.0 beta is explicitly
+not for production.
+
+Before any production migration code, select and pin a maintained binding to
+the official stable SQLCipher 4.x source (or a vendor-supported binding),
+record the exact SQLCipher and SQLite versions, provider, build flags, and
+Windows compiler/toolchain, and verify its license and update process. A
+custom `database/sql` adapter that replaces SQLite with pinned official
+SQLCipher sources is a candidate, not yet a decision. Do not promote the old
+candidate driver merely because its tag exists or its smoke test passes.
+
+Evidence: [mutecomm module publication metadata](https://pkg.go.dev/github.com/mutecomm/go-sqlcipher/v4),
+[v4.4.2 bundled SQLite header](https://github.com/mutecomm/go-sqlcipher/blob/v4.4.2/sqlite3.h),
+[SQLCipher maintainer guidance on Go bindings](https://discuss.zetetic.net/t/sqlcipher-is-supported-in-golang/5738),
+[official SQLCipher releases](https://github.com/sqlcipher/sqlcipher/releases), and
+[official SQLCipher changelog](https://github.com/sqlcipher/sqlcipher/blob/master/CHANGELOG.md).
 
 ## Scope and source boundary
 
@@ -44,15 +73,23 @@ the encrypted destination and recovery copy. There is no automatic deletion.
    acceptance. On any earlier error, close handles and remove only newly
    created destination artifacts; retain source and preexisting files.
 
-## Key, identity, and recovery contract
+## Key, identity, and portable recovery contract
 
 The offline device password gates local use; it is not the SQLCipher key and
-does not authorize a new device or recover a lost DPAPI key. Do not represent
-copied database files as portable. Recovery must be explicit: either restore
-under the original Windows user/DPAPI context or define and test a separately
-protected recovery-key enrollment flow before claiming cross-device recovery.
-Until that exists, document that loss of the Windows profile/DPAPI material can
-make both the live database and its DPAPI-wrapped key unrecoverable.
+must not be reused as the recovery secret. DPAPI-wrapped key storage is for
+normal same-Windows-user operation only. A portable encrypted backup must also
+include a versioned AES-256-GCM envelope of the random database key, wrapped
+with a separately enrolled owner recovery secret. The recovery secret must be
+independent of the Windows profile and device password; a passphrase-based
+enrollment must use a reviewed, parameter-versioned password KDF and unique
+salt. The secret must never be stored beside the backup or sent to a service.
+Enrollment must verify a test unwrap before declaring recovery ready.
+
+Fresh-device restore must decrypt the envelope using the owner's recovery
+secret, verify the SQLCipher database, then wrap the database key with the new
+device's Windows DPAPI for normal operation. Keep the original Windows DPAPI
+path as a convenience, not the only recovery contract. The recovery UI and
+documentation must explain how the owner protects and supplies this secret.
 
 `SUITE_DESKTOP_SECRET` is the HTTP desktop-session secret. It is not the
 database key. The database key must never be placed in an environment variable.
@@ -77,7 +114,12 @@ records. Required assertions:
   at snapshot, copy, validation, key wrapping, and finalization leaves source
   usable and permits a clean retry.
 - Encrypted backup restore into a fresh path preserves content, rejects a
-  wrong key, and is readable using the documented recovery procedure.
+  wrong key, and is readable using the documented recovery procedure from a
+  fresh Windows user/profile that does not have the original DPAPI material.
+- Portable backup envelope unwrap succeeds with the enrolled owner recovery
+  secret and fails with an incorrect secret or modified envelope; the restored
+  database key is rewrapped under the new Windows user's DPAPI. Recovery must
+  be verified before enrollment is marked complete.
 - Windows `safeStorage` unavailable, Linux/macOS, and test mocks cannot fall
   back to plaintext key storage or plaintext destination creation.
 - The database key appears in no process arguments, environment, logs, crash
