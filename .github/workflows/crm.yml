@@ -12,6 +12,11 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: mingw-w64-x86_64-gcc
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -19,6 +24,12 @@ jobs:
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
+      - name: Verify real SQLCipher encryption on Windows
+        shell: msys2 {0}
+        run: |
+          export CGO_ENABLED=1
+          export CC=gcc
+          go -C backend test -run '^TestSQLCipherDriverEncryptsAndRejectsWrongKey$' -count=1
       - run: npm run install:ci
       - name: Check CRM desktop identity and data boundaries
         run: node --test tests/desktop-identity.test.cjs
