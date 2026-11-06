@@ -21,15 +21,15 @@ test('pipeline transition persists, rejects a stale view, and supports localized
  await panel.getByRole('combobox',{name:'Opportunity',exact:true}).selectOption(opportunity.id);
  await panel.getByRole('combobox',{name:'Target stage',exact:true}).selectOption(won.id);
  await expect(panel.getByRole('button',{name:'Update stage',exact:true})).toBeDisabled();
- await panel.getByLabel('Transition reason',{exact:true}).fill('Signed agreement');
+ await panel.getByRole('textbox',{name:'Transition reason',exact:true}).fill('Signed agreement');
  await send('opportunity-stage',{opportunityId:opportunity.id,expectedStageId:opportunity.stageId,stageId:other.id,reason:'Parallel operator',requestId:crypto.randomUUID()});
  await panel.getByRole('button',{name:'Update stage',exact:true}).click();
  await expect(panel.getByRole('alert')).toBeVisible();
- await expect(panel.getByLabel('Transition reason',{exact:true})).toHaveValue('Signed agreement');
+ await expect(panel.getByRole('textbox',{name:'Transition reason',exact:true})).toHaveValue('Signed agreement');
  await page.reload();
  await panel.getByRole('combobox',{name:'Opportunity',exact:true}).selectOption(opportunity.id);
  await panel.getByRole('combobox',{name:'Target stage',exact:true}).selectOption(won.id);
- await panel.getByLabel('Transition reason',{exact:true}).fill('Signed agreement');
+ await panel.getByRole('textbox',{name:'Transition reason',exact:true}).fill('Signed agreement');
  await panel.getByRole('button',{name:'Update stage',exact:true}).click();
  await expect(panel.getByRole('status')).toContainText('Opportunity stage updated');
  const saved=(await getData()).opportunities.find((row:{id:string})=>row.id===opportunity.id);
