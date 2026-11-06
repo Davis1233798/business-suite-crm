@@ -17,7 +17,8 @@ belong to that organization. Client identity fields are rejected.
 
 - The target stage defines probability and whether the opportunity is open,
   won or lost. Validate stage probability in 0..100 and reject a stage marked
-  both won and lost. Closing a deal requires a bounded, nonblank reason;
+  both won and lost. Won stages require probability 100 and lost stages 0.
+  Closing a deal requires a bounded, nonblank reason;
   clear the reason belonging to the other outcome.
 - Require the expected current stage so stale browser tabs cannot overwrite a
   concurrent transition. Retry the same actor/key/payload by returning the

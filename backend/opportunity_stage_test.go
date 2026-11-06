@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"sync"
@@ -23,6 +24,73 @@ func stagePost(t *testing.T, a *App, cookies []*http.Cookie, payload map[string]
 		t.Fatal(err)
 	}
 	return result.Data
+}
+
+func TestOpportunityLostAndReopenedStatesClearOppositeReasons(t *testing.T) {
+	a := appForTest(t)
+	admin := login(t, a, "admin@suite.test", token())
+	org, opportunity, initial, open, won := stageFixture(t, a, admin)
+	lost := "stage_" + token()
+	if _, err := a.db.Exec("INSERT INTO crm_stages(id,organization_id,name,position,probability,is_won,is_lost) VALUES(?,?,'Lost fixture',40,0,0,1)", lost, org); err != nil {
+		t.Fatal(err)
+	}
+	var owner, account, date string
+	if err := a.db.QueryRow("SELECT owner_id,account_id,close_date FROM crm_opportunities WHERE id=?", opportunity).Scan(&owner, &account, &date); err != nil {
+		t.Fatal(err)
+	}
+	stagePost(t, a, admin, map[string]any{"opportunityId": opportunity, "expectedStageId": initial, "stageId": won, "reason": "Signed"}, 200)
+	stagePost(t, a, admin, map[string]any{"opportunityId": opportunity, "expectedStageId": won, "stageId": lost, "reason": "Agreement cancelled"}, 200)
+	var wonReason, lostReason sql.NullString
+	var status string
+	var weighted int64
+	if err := a.db.QueryRow("SELECT status,won_reason,loss_reason,weighted_amount FROM crm_opportunities WHERE id=?", opportunity).Scan(&status, &wonReason, &lostReason, &weighted); err != nil {
+		t.Fatal(err)
+	}
+	if status != "lost" || wonReason.Valid || lostReason.String != "Agreement cancelled" || weighted != 0 {
+		t.Fatalf("lost status=%s won=%v lost=%v weighted=%d", status, wonReason, lostReason, weighted)
+	}
+	stagePost(t, a, admin, map[string]any{"opportunityId": opportunity, "expectedStageId": lost, "stageId": open, "reason": ""}, 200)
+	var savedOwner, savedAccount, savedDate string
+	var amount int64
+	if err := a.db.QueryRow("SELECT status,won_reason,loss_reason,weighted_amount,amount,owner_id,account_id,close_date FROM crm_opportunities WHERE id=?", opportunity).Scan(&status, &wonReason, &lostReason, &weighted, &amount, &savedOwner, &savedAccount, &savedDate); err != nil {
+		t.Fatal(err)
+	}
+	if status != "open" || wonReason.Valid || lostReason.Valid || weighted != 39 || amount != 105 || savedOwner != owner || savedAccount != account || savedDate != date {
+		t.Fatal("reopening corrupted unrelated opportunity fields or retained a close reason")
+	}
+}
+
+func TestOpportunityStageRetryPersistenceFailureRollsBackAndCanRetry(t *testing.T) {
+	a := appForTest(t)
+	admin := login(t, a, "admin@suite.test", token())
+	org, opportunity, initial, open, _ := stageFixture(t, a, admin)
+	var before int
+	if err := a.db.QueryRow("SELECT count(*) FROM audit_events WHERE organization_id=?", org).Scan(&before); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := a.db.Exec("CREATE TRIGGER pipeline_retry_failure BEFORE INSERT ON idempotency_keys WHEN NEW.endpoint='/station/crm/opportunity-stage' BEGIN SELECT RAISE(ABORT,'retry failure'); END"); err != nil {
+		t.Fatal(err)
+	}
+	payload := map[string]any{"opportunityId": opportunity, "expectedStageId": initial, "stageId": open, "requestId": token()}
+	stagePost(t, a, admin, payload, 503)
+	var stage string
+	var audits, retries int
+	if err := a.db.QueryRow("SELECT stage_id FROM crm_opportunities WHERE id=?", opportunity).Scan(&stage); err != nil {
+		t.Fatal(err)
+	}
+	if err := a.db.QueryRow("SELECT count(*) FROM audit_events WHERE organization_id=?", org).Scan(&audits); err != nil {
+		t.Fatal(err)
+	}
+	if err := a.db.QueryRow("SELECT count(*) FROM idempotency_keys WHERE organization_id=? AND key=?", org, payload["requestId"]).Scan(&retries); err != nil {
+		t.Fatal(err)
+	}
+	if stage != initial || audits != before || retries != 0 {
+		t.Fatal("failed retry-result insert left partial pipeline state")
+	}
+	if _, err := a.db.Exec("DROP TRIGGER pipeline_retry_failure"); err != nil {
+		t.Fatal(err)
+	}
+	stagePost(t, a, admin, payload, 200)
 }
 
 func stageFixture(t *testing.T, a *App, cookies []*http.Cookie) (org, opportunity, initial, open, won string) {
