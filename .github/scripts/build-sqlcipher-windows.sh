@@ -20,8 +20,6 @@ export AR=ar
 export RANLIB=ranlib
 ./configure \
   --with-tempstore=yes \
-  --enable-shared=no \
-  --enable-static=yes \
   CFLAGS="-DSQLITE_HAS_CODEC -DSQLITE_EXTRA_INIT=sqlcipher_extra_init -DSQLITE_EXTRA_SHUTDOWN=sqlcipher_extra_shutdown -DSQLITE_THREADSAFE=1 -DSQLCIPHER_CRYPTO_OPENSSL" \
   LDFLAGS="-lcrypto"
 make -j2 libsqlite3.a sqlite3.h
@@ -31,3 +29,6 @@ test -f sqlite3.h
 printf 'SQLCipher commit: %s\n' "$actual_commit"
 printf 'SQLite header: %s\n' "$(grep -m1 '#define SQLITE_VERSION ' sqlite3.h)"
 printf 'SQLCipher provider define: %s\n' "$(grep -m1 'SQLCIPHER_CRYPTO_OPENSSL' config.log || true)"
+printf 'OpenSSL build provider: %s\n' "$(openssl version)"
+printf 'Windows C compiler: %s\n' "$(gcc --version | head -n1)"
+printf 'SQLCipher static library SHA-256: %s\n' "$(sha256sum libsqlite3.a | cut -d ' ' -f 1)"

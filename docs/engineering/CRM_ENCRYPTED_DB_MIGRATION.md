@@ -34,9 +34,15 @@ parameter, consumed by `sqlite3_open` while opening each connection, before
 those PRAGMAs. The mattn driver preserves `file:` URIs and requests URI support.
 The Windows test checks the real engine version, encrypted file contents,
 correct-key access on two simultaneously held pool connections, and rejection
-of wrong and missing keys. The database key exists only in the in-process URI
-string; production code must never log that URI or include it in argv or the
-environment.
+of wrong and missing keys. It also holds a reader snapshot while committing a
+new row, verifies the committed row is readable from the still-live encrypted
+WAL through a fresh keyed pool, checks that fixture values are absent from the
+WAL bytes, and reopens the database after close/checkpoint. The database key
+exists only in the in-process URI string; production code must never log that
+URI or include it in argv or the environment.
+
+The CI build records the SQLCipher source commit, SQLite header version,
+OpenSSL version, C compiler version, and SHA-256 of the built static library.
 
 This is a driver proof, not production approval. Before migration code, review
 the pinned SQLCipher/OpenSSL build, confirm its license notices and the final
