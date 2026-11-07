@@ -43,7 +43,7 @@ jobs:
           $sqlcipherMsysPath = & "${{ steps.msys2.outputs.msys2-location }}\usr\bin\cygpath.exe" -m $sqlcipherRoot
           $env:CGO_CFLAGS = "-I$sqlcipherMsysPath"
           $env:CGO_LDFLAGS = "-L$sqlcipherMsysPath -lcrypto"
-          go -C backend test -tags libsqlite3 -run '^TestWindowsExternalSQLCipherRejectsPlaintextWrongAndMissingKeys$' -count=1
+          go -C backend test -tags libsqlite3 -run '^TestWindowsExternalSQLCipher(RejectsPlaintextWrongAndMissingKeys|ExportsCRMCommittedWAL)$' -count=1
       - run: npm run install:ci
       - name: Check CRM desktop identity and data boundaries
         run: node --test tests/desktop-identity.test.cjs
