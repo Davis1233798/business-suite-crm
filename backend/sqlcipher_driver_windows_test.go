@@ -67,7 +67,9 @@ func TestWindowsExternalSQLCipherRejectsPlaintextWrongAndMissingKeys(t *testing.
 	if err != nil {
 		t.Fatal("open WAL writer")
 	}
-	if _, err := writer.ExecContext(ctx, `INSERT INTO audit_events VALUES('wal-fixture', 'WAL')`); err != nil {
+	const walID = "crm-sqlcipher-wal-fixture-record"
+	const walAction = "crm-sqlcipher-committed-audit-action"
+	if _, err := writer.ExecContext(ctx, `INSERT INTO audit_events VALUES(?, ?)`, walID, walAction); err != nil {
 		t.Fatal("commit WAL fixture")
 	}
 	walPath := path + "-wal"
@@ -75,7 +77,7 @@ func TestWindowsExternalSQLCipherRejectsPlaintextWrongAndMissingKeys(t *testing.
 	if err != nil || len(wal) < 32 {
 		t.Fatal("committed encrypted WAL is missing")
 	}
-	if bytes.Contains(wal, []byte("wal-fixture")) || bytes.Contains(wal, []byte("WAL")) {
+	if bytes.Contains(wal, []byte(walID)) || bytes.Contains(wal, []byte(walAction)) {
 		t.Fatal("WAL contains plaintext fixture values")
 	}
 
@@ -106,7 +108,7 @@ func TestWindowsExternalSQLCipherRejectsPlaintextWrongAndMissingKeys(t *testing.
 		if err := conn.QueryRowContext(ctx, `PRAGMA cipher_version`).Scan(&cipherVersion); err != nil || !strings.Contains(cipherVersion, windowsSQLCipherVersion) {
 			t.Fatal("connection is not using the pinned SQLCipher engine")
 		}
-		if err := conn.QueryRowContext(ctx, `SELECT action FROM audit_events WHERE id='wal-fixture'`).Scan(&action); err != nil || action != "WAL" {
+		if err := conn.QueryRowContext(ctx, `SELECT action FROM audit_events WHERE id=?`, walID).Scan(&action); err != nil || action != walAction {
 			t.Fatal("keyed connection could not read committed encrypted WAL fixture")
 		}
 	}
@@ -125,7 +127,7 @@ func TestWindowsExternalSQLCipherRejectsPlaintextWrongAndMissingKeys(t *testing.
 
 	restarted := openSQLCipherURI(t, path, key)
 	var persistedAction string
-	if err := restarted.QueryRow(`SELECT action FROM audit_events WHERE id='wal-fixture'`).Scan(&persistedAction); err != nil || persistedAction != "WAL" {
+	if err := restarted.QueryRow(`SELECT action FROM audit_events WHERE id=?`, walID).Scan(&persistedAction); err != nil || persistedAction != walAction {
 		t.Fatal("reopened SQLCipher database lost committed WAL fixture")
 	}
 	if err := restarted.Close(); err != nil {
