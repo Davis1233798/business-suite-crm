@@ -12,6 +12,17 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        id: msys2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            git
+            make
+            tcl
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-openssl
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -19,6 +30,20 @@ jobs:
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
+      - name: Build pinned SQLCipher C library with OpenSSL
+        shell: msys2 {0}
+        run: bash .github/scripts/build-sqlcipher-windows.sh
+      - name: Verify real SQLCipher encryption on Windows
+        shell: pwsh
+        run: |
+          $env:CGO_ENABLED = '1'
+          $env:PATH = "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;$env:PATH"
+          $env:CC = 'gcc'
+          $sqlcipherRoot = Join-Path $env:GITHUB_WORKSPACE '.sqlcipher-windows\source'
+          $sqlcipherMsysPath = & "${{ steps.msys2.outputs.msys2-location }}\usr\bin\cygpath.exe" -m $sqlcipherRoot
+          $env:CGO_CFLAGS = "-I$sqlcipherMsysPath"
+          $env:CGO_LDFLAGS = "-L$sqlcipherMsysPath -lcrypto"
+          go -C backend test -tags libsqlite3 -run '^TestWindowsExternalSQLCipherRejectsPlaintextWrongAndMissingKeys$' -count=1
       - run: npm run install:ci
       - name: Check CRM desktop identity and data boundaries
         run: node --test tests/desktop-identity.test.cjs
