@@ -76,6 +76,15 @@ the encrypted destination and recovery copy. There is no automatic deletion.
 
 ## Required migration sequence
 
+The Windows export probe tests SQLCipher's `sqlcipher_export` with a keyed
+destination as the main connection and the CRM source attached read-only
+with an empty key. It uses the actual CRM schema and a committed WAL record.
+The probe checks that the original database and WAL bytes are unchanged
+and that the keyed copy reopens with the business and identity tables.
+Source lock orchestration, full content verification and publication remain
+part of the migration sequence below.
+
+
 1. Acquire an exclusive per-user migration lock and stop/confirm stopped all
    processes that can write the source.
 2. Verify the source is a regular CRM database, run SQLite integrity and
