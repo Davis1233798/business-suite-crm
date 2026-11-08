@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
-const workflow = fs.readFileSync('.github/workflows/crm.yml', 'utf8');
+const workflow = fs.readFileSync('.github/workflows/crm.yml', 'utf8').replace(/\r\n/g, '\n');
 const windowsDesktop = workflow.split('\n  windows-desktop:\n')[1]?.split('\n  crm:\n')[0] ?? '';
 const crm = workflow.split('\n  crm:\n')[1]?.split('\n  publish:\n')[0] ?? '';
 const publish = workflow.split('\n  publish:\n')[1] ?? '';

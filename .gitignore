@@ -75,3 +75,7 @@ __pycache__/
 .venv/
 .pytest_cache/
 /release/
+
+# Rust desktop build targets
+/desktop/target/
+/target/
