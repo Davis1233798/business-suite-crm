@@ -167,8 +167,7 @@ impl ChildSupervisor {
 
         let mut cmd = Command::new(binary);
         cmd.env("SUITE_DB", db_path)
-            .env("SUITE_ASSETS", assets)
-            .env("SUITE_PORT", "0")
+            .env("SUITE_WEB", assets)
             .env("SUITE_DESKTOP_SECRET", &secret)
             .env("SUITE_DESKTOP", "1")
             .stdin(Stdio::piped())
