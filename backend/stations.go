@@ -76,6 +76,10 @@ func (a *App) stationAPI(w http.ResponseWriter, r *http.Request) {
 		fail(w, 403, "No access to this workspace")
 		return
 	}
+	if site == "crm" && action == "support" {
+		a.crmSupport(w, r, id, g)
+		return
+	}
 	if site == "crm" && action == "quotes" {
 		a.crmQuotes(w, r, id, g)
 		return
