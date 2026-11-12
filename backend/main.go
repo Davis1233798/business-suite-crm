@@ -100,6 +100,16 @@ func openDB(file string) (*sql.DB, error) {
 	if e != nil {
 		return nil, e
 	}
+	return initializeCRMDatabase(db)
+}
+
+func initializeCRMDatabase(db *sql.DB) (_ *sql.DB, err error) {
+	defer func() {
+		if err != nil {
+			db.Close()
+		}
+	}()
+	var e error
 	db.SetMaxOpenConns(1)
 	if _, e = db.Exec("PRAGMA foreign_keys=ON; PRAGMA busy_timeout=10000; PRAGMA journal_mode=WAL;"); e != nil {
 		return nil, e
@@ -441,7 +451,18 @@ func main() {
 	if e := os.MkdirAll(filepath.Dir(file), 0700); e != nil {
 		log.Fatal(e)
 	}
-	db, e := openDB(file)
+	desktop := os.Getenv("SUITE_DESKTOP") == "1"
+	var db *sql.DB
+	var e error
+	if desktop {
+		key, keyErr := readDesktopDatabaseKey(os.Stdin)
+		if keyErr != nil {
+			log.Fatal(keyErr)
+		}
+		db, e = openDesktopDatabase(file, key)
+	} else {
+		db, e = openDB(file)
+	}
 	if e != nil {
 		log.Fatal(e)
 	}
@@ -454,10 +475,16 @@ func main() {
 	if addr == "" {
 		addr = "127.0.0.1:8095"
 	}
+	if desktop {
+		addr = "127.0.0.1:0"
+	}
 	server := &http.Server{Addr: addr, Handler: &App{db: db, assets: assets}, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 20 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16384}
 	listener, e := net.Listen("tcp", addr)
 	if e != nil {
 		log.Fatal(e)
+	}
+	if desktop {
+		fmt.Printf("LISTEN http://%s\n", listener.Addr())
 	}
 	log.Printf("Go business-suite ready at %s", listener.Addr().String())
 	log.Fatal(server.Serve(listener))

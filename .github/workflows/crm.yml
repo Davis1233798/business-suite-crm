@@ -43,14 +43,33 @@ jobs:
           $sqlcipherMsysPath = & "${{ steps.msys2.outputs.msys2-location }}\usr\bin\cygpath.exe" -m $sqlcipherRoot
           $env:CGO_CFLAGS = "-I$sqlcipherMsysPath"
           $env:CGO_LDFLAGS = "-L$sqlcipherMsysPath -lcrypto"
-          go -C backend test -tags libsqlite3 -run '^TestWindowsExternalSQLCipher(RejectsPlaintextWrongAndMissingKeys|ExportsCRMCommittedWAL)$' -count=1
+          go -C backend test -tags libsqlite3 -run '^TestWindowsExternalSQLCipher(RejectsPlaintextWrongAndMissingKeys|ExportsCRMCommittedWAL)$|^TestPackagedCRMDesktopDatabase$' -count=1
       - run: npm run install:ci
       - name: Check CRM desktop identity and data boundaries
         run: node --test tests/desktop-identity.test.cjs
       - name: Build Windows CRM desktop backend and assets
-        run: npm run desktop:prepare
+        shell: pwsh
+        run: |
+          $env:CGO_ENABLED = '1'
+          $env:PATH = "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;$env:PATH"
+          $env:CC = 'gcc'
+          $sqlcipherRoot = Join-Path $env:GITHUB_WORKSPACE '.sqlcipher-windows\source'
+          $sqlcipherMsysPath = & "${{ steps.msys2.outputs.msys2-location }}\usr\bin\cygpath.exe" -m $sqlcipherRoot
+          $env:CGO_CFLAGS = "-I$sqlcipherMsysPath"
+          $env:CGO_LDFLAGS = "-L$sqlcipherMsysPath -lcrypto"
+          npm run desktop:prepare
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item -LiteralPath "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin\libcrypto-3-x64.dll" -Destination outputs/go/ -ErrorAction Stop
       - name: Package unpacked Windows CRM desktop app
         run: npm run desktop:package
+      - name: Smoke-test the packaged CRM launcher
+        shell: pwsh
+        run: |
+          $env:SUITE_DESKTOP_SMOKE = '1'
+          $env:SUITE_DESKTOP_SMOKE_DATA = Join-Path $env:RUNNER_TEMP 'crm-desktop-smoke'
+          $launcher = Join-Path $PWD 'outputs/desktop/win-unpacked/RelationDesk CRM.exe'
+          $process = Start-Process -FilePath $launcher -WindowStyle Hidden -Wait -PassThru
+          if ($process.ExitCode -ne 0) { exit $process.ExitCode }
       - uses: actions/upload-artifact@v4
         with:
           name: relationdesk-crm-windows-${{ github.sha }}

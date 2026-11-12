@@ -39,6 +39,7 @@ const goBin = path.resolve('outputs/go/business-suite.exe');
 if (existsSync(goBin)) {
   console.log(`[package-desktop] Copying ${goBin} -> ${path.join(backendDir, 'business-suite.exe')}`);
   cpSync(goBin, path.join(backendDir, 'business-suite.exe'));
+  cpSync(path.resolve('outputs/go/libcrypto-3-x64.dll'), path.join(backendDir, 'libcrypto-3-x64.dll'));
 } else {
   console.warn(`[package-desktop] Warning: Go binary not found at ${goBin}`);
 }
