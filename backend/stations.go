@@ -108,6 +108,43 @@ func (a *App) stationAPI(w http.ResponseWriter, r *http.Request) {
 			}
 			out[d.Key] = rows
 		}
+		if site == "crm" && !front {
+			ownerFilter := ""
+			args := []any{id.OrganizationID}
+			if g.Role != "admin" {
+				ownerFilter = " AND o.owner_id=?"
+				args = append(args, id.UserID)
+			}
+			args = append(args, id.OrganizationID)
+			funnel, err := queryMaps(a.db, `SELECT s.id AS stage_id,s.name AS stage_name,s.probability,COUNT(o.id) AS opportunity_count,COALESCE(SUM(o.amount),0) AS total_amount,COALESCE(SUM(o.weighted_amount),0) AS weighted_amount FROM crm_stages s LEFT JOIN crm_opportunities o ON o.organization_id=s.organization_id AND o.stage_id=s.id AND o.organization_id=?`+ownerFilter+` WHERE s.organization_id=? GROUP BY s.id,s.name,s.probability,s.position ORDER BY s.position`, args...)
+			if err != nil {
+				fail(w, 500, "Unable to calculate sales funnel")
+				return
+			}
+			out["salesFunnel"] = funnel
+			rows, err := queryMaps(a.db, "SELECT c.contact_id,c.email FROM crm_consents c JOIN crm_contacts p ON p.id=c.contact_id AND p.organization_id=c.organization_id WHERE c.organization_id=? AND c.marketing_email_allowed=1 ORDER BY c.rowid DESC LIMIT 500", id.OrganizationID)
+			if err != nil {
+				fail(w, 500, "Unable to read marketing consent")
+				return
+			}
+			out["marketingRecipients"] = rows
+		}
+		if site == "dining" {
+			rows, err := queryMaps(a.db, `SELECT s.id AS session_id,l.service_fee_rate,COALESCE(SUM(CASE WHEN o.status='placed' AND i.status!='cancelled' THEN i.line_total ELSE 0 END),0) AS subtotal FROM dining_table_sessions s JOIN dining_tables t ON t.id=s.table_id AND t.organization_id=s.organization_id JOIN dining_locations l ON l.id=t.location_id AND l.organization_id=s.organization_id LEFT JOIN dining_orders o ON o.session_id=s.id AND o.organization_id=s.organization_id LEFT JOIN dining_order_items i ON i.order_id=o.id AND i.organization_id=o.organization_id WHERE s.organization_id=? AND s.status='active' GROUP BY s.id,l.service_fee_rate ORDER BY s.rowid DESC LIMIT 500`, id.OrganizationID)
+			if err != nil {
+				fail(w, 500, "Unable to calculate table bills")
+				return
+			}
+			out["billSummaries"] = rows
+		}
+		if site == "shop" && !front {
+			events, err := queryMaps(a.db, "SELECT id,status,retry_count,created_at FROM outbox_events WHERE organization_id=? AND event_type='shop.paid' ORDER BY rowid DESC LIMIT 100", id.OrganizationID)
+			if err != nil {
+				fail(w, 500, "Unable to read commerce events")
+				return
+			}
+			out["fulfillmentEvents"] = events
+		}
 		ok(w, out)
 		return
 	}
