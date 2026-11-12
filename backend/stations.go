@@ -17,7 +17,7 @@ type Dataset struct {
 }
 
 var datasets = map[string][]Dataset{
-	"crm": {{"accounts", "crm_accounts", "Customers", nil}, {"contacts", "crm_contacts", "Contacts", nil}, {"leads", "crm_leads", "Leads", []string{"id", "name", "company", "status"}}, {"opportunities", "crm_opportunities", "Opportunities", nil}, {"stages", "crm_stages", "Pipeline stages", nil}, {"activities", "crm_activities", "Activities", nil}, {"tickets", "crm_tickets", "Support tickets", []string{"id", "subject", "status", "priority", "created_at"}}, {"quotes", "crm_quotes", "Quotes", nil}, {"quoteItems", "crm_quote_items", "Quote items", nil}},
+	"crm": {{"accounts", "crm_accounts", "Customers", nil}, {"contacts", "crm_contacts", "Contacts", nil}, {"leads", "crm_leads", "Leads", []string{"id", "name", "company", "status"}}, {"opportunities", "crm_opportunities", "Opportunities", nil}, {"stages", "crm_stages", "Pipeline stages", nil}, {"activities", "crm_activities", "Activities", nil}, {"tickets", "crm_tickets", "Support tickets", []string{"id", "subject", "status", "priority", "sla_hours", "created_at"}}, {"quotes", "crm_quotes", "Quotes", nil}, {"quoteItems", "crm_quote_items", "Quote items", nil}},
 }
 
 func camel(s string) string {
@@ -76,6 +76,10 @@ func (a *App) stationAPI(w http.ResponseWriter, r *http.Request) {
 		fail(w, 403, "No access to this workspace")
 		return
 	}
+	if site == "crm" && action == "support" {
+		a.crmSupport(w, r, id, g)
+		return
+	}
 	if site == "crm" && action == "quotes" {
 		a.crmQuotes(w, r, id, g)
 		return
@@ -102,7 +106,30 @@ func (a *App) stationAPI(w http.ResponseWriter, r *http.Request) {
 				fail(w, 500, "Unable to read workspace data: "+d.Key)
 				return
 			}
+			if site == "crm" && d.Key == "tickets" {
+				for _, row := range rows {
+					created, _ := row["createdAt"].(string)
+					parsed, err := time.Parse(time.RFC3339, created)
+					if err != nil {
+						parsed, err = time.Parse("2006-01-02 15:04:05", created)
+					}
+					hours, valid := row["slaHours"].(int64)
+					if err == nil && valid && hours >= 1 && hours <= 720 {
+						due := crmSLADue(parsed, int(hours))
+						row["dueAt"] = due.Format(time.RFC3339)
+						row["isSlaBreached"] = row["status"] != "resolved" && time.Now().After(due)
+					}
+				}
+			}
 			out[d.Key] = rows
+		}
+		if site == "crm" && !front {
+			rows, err := queryMaps(a.db, "SELECT c.contact_id,c.email FROM crm_consents c JOIN crm_contacts p ON p.id=c.contact_id AND p.organization_id=c.organization_id WHERE c.organization_id=? AND c.marketing_email_allowed=1 ORDER BY c.rowid DESC LIMIT 500", id.OrganizationID)
+			if err != nil {
+				fail(w, 500, "Unable to read marketing consent")
+				return
+			}
+			out["marketingRecipients"] = rows
 		}
 		ok(w, out)
 		return

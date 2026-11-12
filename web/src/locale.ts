@@ -289,6 +289,27 @@ const traditionalChinese:Record<string,string> = {
   "Select an opportunity": "選擇商機",
   "Submit quote": "提交報價",
   "Submitted quote": "已提交的報價",
-  "Versioned quotes": "報價版本"
+  "Versioned quotes": "報價版本",
+  "CUSTOMER SUPPORT": "客戶服務",
+  "Contact created": "已建立聯絡人",
+  "Contact explicitly agrees to marketing emails": "聯絡人明確同意接收行銷電子郵件",
+  "Contact": "聯絡人",
+  "Contacts, consent and support": "聯絡人、同意與客服",
+  "Create contact": "建立聯絡人",
+  "Create support ticket": "建立客服工單",
+  "Customer": "客戶",
+  "Due": "到期",
+  "Job title": "職稱",
+  "Marketing consent revoked": "已撤回行銷同意",
+  "No linked customer": "不連結客戶",
+  "Priority": "優先級",
+  "Revoke marketing consent": "撤回行銷同意",
+  "SLA business hours": "SLA 營業時數",
+  "SLA counts Monday to Friday, 09:00–18:00 Taipei time; public holidays are included.": "SLA 依台北時間週一至週五 09:00–18:00 計算，包含國定假日。",
+  "Select a contact": "選擇聯絡人",
+  "Ticket created": "已建立工單",
+  "Ticket contact": "工單聯絡人",
+  "No linked contact": "不連結聯絡人",
+  "Ticket subject": "工單主旨"
 };
 export function tr(text:string):string { return currentLanguage()==='zh-TW'?(traditionalChinese[text]??text):text; }
