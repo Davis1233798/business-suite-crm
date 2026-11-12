@@ -278,6 +278,17 @@ const traditionalChinese:Record<string,string> = {
   "Lead conversion could not be claimed": "無法鎖定潛客轉換",
   "Lead has already been converted": "潛客已轉換",
   "Conversion failed; no records were created": "轉換失敗，未建立任何資料",
-  "Conversion rejected for browser retry acceptance": "轉換遭拒，請確認資料後重試"
+  "Conversion rejected for browser retry acceptance": "轉換遭拒，請確認資料後重試",
+  "A submitted quote is a snapshot. Managers approve and lock it; create a new version for changes.": "提交的報價為快照，由主管核准並鎖定；變更時請建立新版本。",
+  "Approve quote": "核准報價",
+  "Item name": "品名",
+  "QUOTE MANAGEMENT": "報價管理",
+  "Quote approved and locked": "報價已核准並鎖定",
+  "Quote submitted": "報價已提交",
+  "Select a quote": "選擇報價",
+  "Select an opportunity": "選擇商機",
+  "Submit quote": "提交報價",
+  "Submitted quote": "已提交的報價",
+  "Versioned quotes": "報價版本"
 };
 export function tr(text:string):string { return currentLanguage()==='zh-TW'?(traditionalChinese[text]??text):text; }
