@@ -10,6 +10,7 @@ test('CRM back office persists a contact and a support ticket', async ({ page })
   const support = page.locator('section').filter({
     has: page.getByRole('heading', { name: 'Contacts, consent and support', exact: true }),
   });
+  await support.getByLabel('Customer', { exact: true }).selectOption({ index: 1 });
   const nonce = Date.now();
   const email = `support-${nonce}@example.test`;
   const subject = `Browser support ticket ${nonce}`;
@@ -19,6 +20,9 @@ test('CRM back office persists a contact and a support ticket', async ({ page })
   await support.getByRole('button', { name: 'Create contact', exact: true }).click();
   await expect(support.getByRole('status')).toHaveText('Contact created');
 
+  const contact = support.getByLabel('Ticket contact', { exact: true });
+  await contact.selectOption({ label: `Browser Contact · ${email}` });
+  const contactId = await contact.inputValue();
   await support.getByLabel('Ticket subject').fill(subject);
   await support.getByLabel('SLA business hours').fill('8');
   await support.getByRole('button', { name: 'Create support ticket' }).click();
@@ -28,5 +32,5 @@ test('CRM back office persists a contact and a support ticket', async ({ page })
   expect(response.ok()).toBe(true);
   const { data } = await response.json();
   expect(data.contacts).toContainEqual(expect.objectContaining({ email }));
-  expect(data.tickets).toContainEqual(expect.objectContaining({ subject, slaHours: 8, status: 'new' }));
+  expect(data.tickets).toContainEqual(expect.objectContaining({ subject, contactId, slaHours: 8, status: 'new' }));
 });

@@ -308,6 +308,8 @@ const traditionalChinese:Record<string,string> = {
   "SLA counts Monday to Friday, 09:00–18:00 Taipei time; public holidays are included.": "SLA 依台北時間週一至週五 09:00–18:00 計算，包含國定假日。",
   "Select a contact": "選擇聯絡人",
   "Ticket created": "已建立工單",
+  "Ticket contact": "工單聯絡人",
+  "No linked contact": "不連結聯絡人",
   "Ticket subject": "工單主旨"
 };
 export function tr(text:string):string { return currentLanguage()==='zh-TW'?(traditionalChinese[text]??text):text; }
