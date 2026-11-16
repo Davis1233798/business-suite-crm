@@ -53,6 +53,22 @@ func (a *App) crmQuotes(w http.ResponseWriter, r *http.Request, id *Identity, g 
 		return
 	}
 	defer tx.Rollback()
+	opportunityOwner := ""
+	if in.Action == "create" {
+		e = tx.QueryRow("SELECT owner_id FROM crm_opportunities WHERE organization_id=? AND id=?", id.OrganizationID, in.OpportunityID).Scan(&opportunityOwner)
+		if errors.Is(e, sql.ErrNoRows) {
+			fail(w, 404, "Opportunity not found")
+			return
+		}
+		if e != nil {
+			fail(w, 503, "Cannot read opportunity")
+			return
+		}
+		if g.Role != "admin" && opportunityOwner != id.UserID {
+			fail(w, 403, "Opportunity belongs to another user")
+			return
+		}
+	}
 	raw, _ := json.Marshal(in)
 	hash := digest(id.UserID + "\x00" + string(raw))
 	endpoint := "/station/crm/quote/" + in.Action
@@ -78,20 +94,6 @@ func (a *App) crmQuotes(w http.ResponseWriter, r *http.Request, id *Identity, g 
 	result := map[string]any{}
 	entity := ""
 	if in.Action == "create" {
-		var owner string
-		e = tx.QueryRow("SELECT owner_id FROM crm_opportunities WHERE organization_id=? AND id=?", id.OrganizationID, in.OpportunityID).Scan(&owner)
-		if errors.Is(e, sql.ErrNoRows) {
-			fail(w, 404, "Opportunity not found")
-			return
-		}
-		if e != nil {
-			fail(w, 503, "Cannot read opportunity")
-			return
-		}
-		if g.Role != "admin" && owner != id.UserID {
-			fail(w, 403, "Opportunity belongs to another user")
-			return
-		}
 		var version int64
 		e = tx.QueryRow("SELECT COALESCE(MAX(version),0)+1 FROM crm_quotes WHERE organization_id=? AND opportunity_id=?", id.OrganizationID, in.OpportunityID).Scan(&version)
 		if e != nil || version > 1000000000 {

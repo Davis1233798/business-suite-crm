@@ -60,6 +60,42 @@ func queryMaps(db *sql.DB, query string, args ...any) ([]map[string]any, error) 
 	}
 	return out, rows.Err()
 }
+
+func crmDatasetOwnerFilter(key string) (string, int) {
+	switch key {
+	case "opportunities":
+		return " AND owner_id=?", 1
+	case "quotes":
+		return ` AND EXISTS (
+			SELECT 1 FROM crm_opportunities o
+			WHERE o.organization_id=crm_quotes.organization_id
+			  AND o.id=crm_quotes.opportunity_id AND o.owner_id=?
+		)`, 1
+	case "quoteItems":
+		return ` AND EXISTS (
+			SELECT 1 FROM crm_quotes q
+			JOIN crm_opportunities o ON o.organization_id=q.organization_id AND o.id=q.opportunity_id
+			WHERE q.organization_id=crm_quote_items.organization_id
+			  AND q.id=crm_quote_items.quote_id AND o.owner_id=?
+		)`, 1
+	case "activities":
+		return ` AND owner_id=? AND (
+			opportunity_id IS NULL OR EXISTS (
+				SELECT 1 FROM crm_opportunities o
+				WHERE o.organization_id=crm_activities.organization_id
+				  AND o.id=crm_activities.opportunity_id AND o.owner_id=?
+			)
+		)`, 2
+	case "accounts", "contacts", "leads", "stages", "tickets":
+		// These remain organization-wide CRM workspaces in this authorization slice.
+		return "", 0
+	default:
+		// Do not expose a newly added CRM dataset to individual roles before its
+		// ownership policy has been reviewed.
+		return " AND 1=0", 0
+	}
+}
+
 func (a *App) stationAPI(w http.ResponseWriter, r *http.Request) {
 	site, action := r.PathValue("site"), r.PathValue("action")
 	if !knownSite(site) {
@@ -101,6 +137,13 @@ func (a *App) stationAPI(w http.ResponseWriter, r *http.Request) {
 			}
 			query := "SELECT " + columns + " FROM " + d.Table + " WHERE organization_id=?"
 			args := []any{id.OrganizationID}
+			if site == "crm" && !front && g.Role != "admin" {
+				filter, count := crmDatasetOwnerFilter(d.Key)
+				query += filter
+				for i := 0; i < count; i++ {
+					args = append(args, id.UserID)
+				}
+			}
 			rows, err := queryMaps(a.db, query+" ORDER BY rowid DESC LIMIT 500", args...)
 			if err != nil {
 				fail(w, 500, "Unable to read workspace data: "+d.Key)
@@ -423,7 +466,19 @@ func (a *App) printData(w http.ResponseWriter, r *http.Request, id *Identity, si
 			table = d.Table
 		}
 	}
-	rows, e := queryMaps(a.db, "SELECT * FROM "+table+" WHERE organization_id=? AND id=?", id.OrganizationID, recordID)
+	query := "SELECT * FROM " + table + " WHERE organization_id=? AND id=?"
+	args := []any{id.OrganizationID, recordID}
+	if site == "crm" && kind.Dataset == "quotes" {
+		if grant := id.grant(site); grant != nil && grant.Role != "admin" {
+			query += ` AND EXISTS (
+				SELECT 1 FROM crm_opportunities o
+				WHERE o.organization_id=crm_quotes.organization_id
+				  AND o.id=crm_quotes.opportunity_id AND o.owner_id=?
+			)`
+			args = append(args, id.UserID)
+		}
+	}
+	rows, e := queryMaps(a.db, query, args...)
 	if e != nil || len(rows) != 1 {
 		fail(w, 404, "Document not found in this organization")
 		return

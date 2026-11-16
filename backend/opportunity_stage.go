@@ -40,6 +40,23 @@ func (a *App) opportunityStage(w http.ResponseWriter, r *http.Request, identity 
 		return
 	}
 	defer tx.Rollback()
+	var currentStage, status, owner string
+	var amount, oldWeighted int64
+	var oldProbability int
+	var oldWon, oldLost sql.NullString
+	err = tx.QueryRow("SELECT stage_id,status,owner_id,amount,weighted_amount,probability,won_reason,loss_reason FROM crm_opportunities WHERE organization_id=? AND id=?", identity.OrganizationID, input.OpportunityID).Scan(&currentStage, &status, &owner, &amount, &oldWeighted, &oldProbability, &oldWon, &oldLost)
+	if errors.Is(err, sql.ErrNoRows) {
+		fail(w, 404, "Opportunity not found")
+		return
+	}
+	if err != nil {
+		fail(w, 503, "Cannot read opportunity")
+		return
+	}
+	if grant.Role != "admin" && owner != identity.UserID {
+		fail(w, 403, "Opportunity belongs to another user")
+		return
+	}
 	var oldHash, cached string
 	err = tx.QueryRow("SELECT request_hash,response_body FROM idempotency_keys WHERE organization_id=? AND key=? AND endpoint=?", identity.OrganizationID, input.RequestID, endpoint).Scan(&oldHash, &cached)
 	if err == nil {
@@ -59,19 +76,6 @@ func (a *App) opportunityStage(w http.ResponseWriter, r *http.Request, identity 
 		fail(w, 503, "Cannot read pipeline retry state")
 		return
 	}
-	var currentStage, status, owner string
-	var amount, oldWeighted int64
-	var oldProbability int
-	var oldWon, oldLost sql.NullString
-	err = tx.QueryRow("SELECT stage_id,status,owner_id,amount,weighted_amount,probability,won_reason,loss_reason FROM crm_opportunities WHERE organization_id=? AND id=?", identity.OrganizationID, input.OpportunityID).Scan(&currentStage, &status, &owner, &amount, &oldWeighted, &oldProbability, &oldWon, &oldLost)
-	if errors.Is(err, sql.ErrNoRows) {
-		fail(w, 404, "Opportunity not found")
-		return
-	}
-	if err != nil {
-		fail(w, 503, "Cannot read opportunity")
-		return
-	}
 	if currentStage != input.ExpectedStageID {
 		fail(w, 409, "Opportunity stage changed; reload before trying again")
 		return
@@ -84,13 +88,13 @@ func (a *App) opportunityStage(w http.ResponseWriter, r *http.Request, identity 
 		fail(w, 409, "Opportunity has unsupported money or state")
 		return
 	}
-	var owners int
-	err = tx.QueryRow("SELECT count(*) FROM station_accounts a JOIN station_grants g ON g.user_id=a.user_id WHERE a.user_id=? AND a.organization_id=? AND a.disabled=0 AND g.site='crm' AND g.enabled=1 AND g.scope='back' AND g.role IN ('admin','operator')", owner, identity.OrganizationID).Scan(&owners)
+	var ownerCount int
+	err = tx.QueryRow("SELECT count(*) FROM station_accounts a JOIN station_grants g ON g.user_id=a.user_id WHERE a.user_id=? AND a.organization_id=? AND a.disabled=0 AND g.site='crm' AND g.enabled=1 AND g.scope='back' AND g.role IN ('admin','operator')", owner, identity.OrganizationID).Scan(&ownerCount)
 	if err != nil {
 		fail(w, 503, "Cannot verify opportunity owner")
 		return
 	}
-	if owners != 1 {
+	if ownerCount != 1 {
 		fail(w, 409, "Opportunity owner is not active in this CRM workspace")
 		return
 	}
@@ -124,7 +128,7 @@ func (a *App) opportunityStage(w http.ResponseWriter, r *http.Request, identity 
 		}
 	}
 	weighted := (amount*int64(probability) + 50) / 100
-	changed, err := tx.Exec("UPDATE crm_opportunities SET stage_id=?,probability=?,weighted_amount=?,status=?,won_reason=?,loss_reason=? WHERE organization_id=? AND id=? AND stage_id=?", input.StageID, probability, weighted, next, wonReason, lostReason, identity.OrganizationID, input.OpportunityID, input.ExpectedStageID)
+	changed, err := tx.Exec("UPDATE crm_opportunities SET stage_id=?,probability=?,weighted_amount=?,status=?,won_reason=?,loss_reason=? WHERE organization_id=? AND id=? AND stage_id=? AND owner_id=?", input.StageID, probability, weighted, next, wonReason, lostReason, identity.OrganizationID, input.OpportunityID, input.ExpectedStageID, owner)
 	if err != nil {
 		fail(w, 503, "Pipeline update failed; no changes were saved")
 		return
