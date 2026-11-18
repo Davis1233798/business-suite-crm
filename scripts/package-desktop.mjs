@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, existsSync } from 'node:fs';
+import { cpSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
 function run(cmd, args, options = {}) {
@@ -39,7 +39,13 @@ const goBin = path.resolve('outputs/go/business-suite.exe');
 if (existsSync(goBin)) {
   console.log(`[package-desktop] Copying ${goBin} -> ${path.join(backendDir, 'business-suite.exe')}`);
   cpSync(goBin, path.join(backendDir, 'business-suite.exe'));
-  cpSync(path.resolve('outputs/go/libcrypto-3-x64.dll'), path.join(backendDir, 'libcrypto-3-x64.dll'));
+  if (existsSync('outputs/go')) {
+    const dlls = readdirSync('outputs/go').filter((file) => file.startsWith('libcrypto-') && file.endsWith('.dll'));
+    for (const dll of dlls) {
+      console.log(`[package-desktop] Copying outputs/go/${dll} -> ${path.join(backendDir, dll)}`);
+      cpSync(path.resolve('outputs/go', dll), path.join(backendDir, dll));
+    }
+  }
 } else {
   console.warn(`[package-desktop] Warning: Go binary not found at ${goBin}`);
 }

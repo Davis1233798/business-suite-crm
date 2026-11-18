@@ -59,7 +59,9 @@ jobs:
           $env:CGO_LDFLAGS = "-L$sqlcipherMsysPath -lcrypto"
           npm run desktop:prepare
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Copy-Item -LiteralPath "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin\libcrypto-3-x64.dll" -Destination outputs/go/ -ErrorAction Stop
+          $cryptoDlls = Get-ChildItem -Path "${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin" -Filter "libcrypto-*-x64.dll"
+          if (-not $cryptoDlls) { throw "No libcrypto DLL found in MSYS2 ucrt64\bin" }
+          $cryptoDlls | Copy-Item -Destination outputs/go/ -ErrorAction Stop
       - name: Package unpacked Windows CRM desktop app
         run: npm run desktop:package
       - name: Smoke-test the packaged CRM launcher
