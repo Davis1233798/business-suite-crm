@@ -36,6 +36,7 @@ CREATE TABLE `crm_activities` (
 	`account_id` text,
 	`contact_id` text,
 	`opportunity_id` text,
+	`lead_id` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
@@ -45,6 +46,8 @@ CREATE TABLE `crm_consents` (
 	`contact_id` text NOT NULL,
 	`email` text NOT NULL,
 	`marketing_email_allowed` integer DEFAULT true NOT NULL,
+	`status` text DEFAULT 'active' NOT NULL,
+	`revoked_at` text,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
@@ -68,6 +71,9 @@ CREATE TABLE `crm_leads` (
 	`phone` text,
 	`status` text DEFAULT 'new' NOT NULL,
 	`assigned_to` text,
+	`tax_id` text,
+	`notes` text,
+	`merged_into_id` text,
 	`converted_account_id` text,
 	`converted_contact_id` text,
 	`converted_opportunity_id` text,
@@ -137,6 +143,9 @@ CREATE TABLE `crm_tickets` (
 	`status` text DEFAULT 'new' NOT NULL,
 	`sla_hours` integer DEFAULT 24 NOT NULL,
 	`is_sla_breached` integer DEFAULT false NOT NULL,
+	`paused_at` text,
+	`sla_remaining_seconds` integer,
+	`due_at` text,
 	`resolved_at` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
