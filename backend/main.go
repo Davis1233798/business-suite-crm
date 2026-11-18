@@ -151,10 +151,67 @@ func initializeCRMDatabase(db *sql.DB) (_ *sql.DB, err error) {
 	if _, e = tx.Exec("CREATE TABLE IF NOT EXISTS crm_repository_schema (version INTEGER NOT NULL); INSERT INTO crm_repository_schema(version) SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM crm_repository_schema)"); e != nil {
 		return nil, e
 	}
+	if e = ensureCRMColumns(tx); e != nil {
+		return nil, e
+	}
 	if e = tx.Commit(); e != nil {
 		return nil, e
 	}
 	return db, nil
+}
+
+func ensureCRMColumns(tx *sql.Tx) error {
+	cols := []struct {
+		table string
+		col   string
+		typ   string
+	}{
+		{"crm_tickets", "paused_at", "TEXT"},
+		{"crm_tickets", "sla_remaining_seconds", "INTEGER"},
+		{"crm_tickets", "due_at", "TEXT"},
+		{"crm_leads", "tax_id", "TEXT"},
+		{"crm_leads", "notes", "TEXT"},
+		{"crm_leads", "merged_into_id", "TEXT"},
+		{"crm_activities", "lead_id", "TEXT"},
+		{"crm_consents", "status", "TEXT DEFAULT 'active'"},
+		{"crm_consents", "revoked_at", "TEXT"},
+	}
+	for _, c := range cols {
+		var count int
+		if err := tx.QueryRow("SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?", c.table).Scan(&count); err != nil {
+			return err
+		}
+		if count == 0 {
+			continue
+		}
+		rows, err := tx.Query(fmt.Sprintf("PRAGMA table_info(%s)", c.table))
+		if err != nil {
+			return err
+		}
+		hasCol := false
+		for rows.Next() {
+			var cid int
+			var name, ctype string
+			var notnull, pk int
+			var dflt any
+			if err := rows.Scan(&cid, &name, &ctype, &notnull, &dflt, &pk); err != nil {
+				rows.Close()
+				return err
+			}
+			if name == c.col {
+				hasCol = true
+				break
+			}
+		}
+		rows.Close()
+		if !hasCol {
+			alter := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s", c.table, c.col, c.typ)
+			if _, err := tx.Exec(alter); err != nil {
+				return fmt.Errorf("alter %s add %s: %w", c.table, c.col, err)
+			}
+		}
+	}
+	return nil
 }
 func writeJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
