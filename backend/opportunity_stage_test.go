@@ -137,7 +137,9 @@ func TestOpportunityStagePersistenceRoundingReplayAndClosing(t *testing.T) {
 	input["reason"] = "changed payload"
 	stagePost(t, a, admin, input, 409)
 	input["reason"] = ""
-	stagePost(t, a, login(t, a, "office@suite.test", space), input, 409)
+	// Ownership is checked before retry state so a non-owner cannot probe a
+	// teammate's cached result by reusing its organization-scoped key.
+	stagePost(t, a, login(t, a, "office@suite.test", space), input, 403)
 	stagePost(t, a, admin, map[string]any{"opportunityId": opportunity, "expectedStageId": initial, "stageId": won, "reason": "Won deal"}, 409)
 	stagePost(t, a, admin, map[string]any{"opportunityId": opportunity, "expectedStageId": open, "stageId": won, "reason": " "}, 400)
 	stagePost(t, a, admin, map[string]any{"opportunityId": opportunity, "expectedStageId": open, "stageId": won, "reason": "Signed agreement"}, 200)
