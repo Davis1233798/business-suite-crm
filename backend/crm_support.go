@@ -48,9 +48,11 @@ func crmSLADueWithZone(start time.Time, hours int, zone *time.Location) time.Tim
 	return current.UTC()
 }
 
+var crmTaipeiLocation = time.FixedZone("Asia/Taipei", 8*60*60)
+
 // SLA uses Taipei business hours, Monday through Friday; public holidays are not excluded.
 func crmSLADue(start time.Time, hours int) time.Time {
-	return crmSLADueWithZone(start, hours, time.FixedZone("Asia/Taipei", 8*60*60))
+	return crmSLADueWithZone(start, hours, crmTaipeiLocation)
 }
 
 // SLA uses UTC business hours (09:00 - 18:00 UTC), Monday through Friday; weekends skipped.
@@ -366,13 +368,13 @@ func (a *App) crmSupport(w http.ResponseWriter, r *http.Request, id *Identity, g
 		}
 		if dueTime.IsZero() && createdAtStr.Valid && createdAtStr.String != "" {
 			if ct, err := time.Parse(time.RFC3339, createdAtStr.String); err == nil {
-				dueTime = crmSLADueUTC(ct, slaHours)
+				dueTime = crmSLADue(ct, slaHours)
 			}
 		}
 		if dueTime.IsZero() {
-			dueTime = crmSLADueUTC(pauseTime, slaHours)
+			dueTime = crmSLADue(pauseTime, slaHours)
 		}
-		remSeconds := crmSLARemainingWorkingSeconds(pauseTime, dueTime, time.UTC)
+		remSeconds := crmSLARemainingWorkingSeconds(pauseTime, dueTime, crmTaipeiLocation)
 		_, e = tx.Exec("UPDATE crm_tickets SET status='pending_customer', paused_at=?, sla_remaining_seconds=? WHERE organization_id=? AND id=?", pauseTime.Format(time.RFC3339), remSeconds, id.OrganizationID, entity)
 		result = map[string]any{"ticketId": entity, "status": "pending_customer", "slaRemainingSeconds": remSeconds}
 	case "reopen-ticket":
@@ -404,7 +406,7 @@ func (a *App) crmSupport(w http.ResponseWriter, r *http.Request, id *Identity, g
 		if remSeconds.Valid && remSeconds.Int64 > 0 {
 			secondsToApply = remSeconds.Int64
 		}
-		newDue := crmSLAAddWorkingDuration(reopenTime, secondsToApply, time.UTC)
+		newDue := crmSLAAddWorkingDuration(reopenTime, secondsToApply, crmTaipeiLocation)
 		_, e = tx.Exec("UPDATE crm_tickets SET status='open', paused_at=NULL, sla_remaining_seconds=NULL, due_at=? WHERE organization_id=? AND id=?", newDue.Format(time.RFC3339), id.OrganizationID, entity)
 		result = map[string]any{"ticketId": entity, "status": "open", "dueAt": newDue.Format(time.RFC3339)}
 	}

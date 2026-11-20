@@ -106,9 +106,9 @@ func TestCRMTicketPauseReopenAndSLAFreeze(t *testing.T) {
 		t.Fatalf("empty ticket ID: %s", w.Body.String())
 	}
 
-	// Override created_at and due_at to Friday 15:00 UTC for predictable pause/reopen calculation
-	fri15 := "2026-10-30T15:00:00Z"
-	mon12 := "2026-11-02T12:00:00Z"
+	// Override created_at and due_at to Friday 15:00 Taipei (07:00 UTC) for predictable pause/reopen calculation
+	fri15 := "2026-10-30T07:00:00Z"
+	mon12 := "2026-11-02T04:00:00Z"
 	if _, err := a.db.Exec("UPDATE crm_tickets SET created_at=?, due_at=? WHERE id=?", fri15, mon12, ticketID); err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +118,7 @@ func TestCRMTicketPauseReopenAndSLAFreeze(t *testing.T) {
 		"action":         "pause-ticket",
 		"ticketId":       ticketID,
 		"reason":         "Waiting for client logs",
-		"time":           "2026-10-30T17:00:00Z", // 2 working hours elapsed, 4 working hours remain
+		"time":           "2026-10-30T09:00:00Z", // Friday 17:00 Taipei: 2 working hours elapsed, 4 working hours remain
 		"idempotencyKey": "pause-ticket-key-01",
 	}
 
@@ -191,7 +191,7 @@ func TestCRMTicketPauseReopenAndSLAFreeze(t *testing.T) {
 	reopenReq := map[string]any{
 		"action":         "reopen-ticket",
 		"ticketId":       ticketID,
-		"time":           "2026-11-03T10:00:00Z", // Tuesday 10:00 UTC
+		"time":           "2026-11-03T02:00:00Z", // Tuesday 10:00 Taipei
 		"idempotencyKey": "reopen-ticket-key-01",
 	}
 
@@ -218,9 +218,9 @@ func TestCRMTicketPauseReopenAndSLAFreeze(t *testing.T) {
 	if reopenResult.Data.Status != "open" {
 		t.Fatalf("expected status open, got %s", reopenResult.Data.Status)
 	}
-	// Reopened Tuesday 10:00 UTC with 4 remaining hours -> Tuesday 14:00 UTC (2026-11-03T14:00:00Z)
-	if reopenResult.Data.DueAt != "2026-11-03T14:00:00Z" {
-		t.Fatalf("expected dueAt 2026-11-03T14:00:00Z, got %s", reopenResult.Data.DueAt)
+	// Reopened Tuesday 10:00 Taipei with 4 remaining hours -> Tuesday 14:00 Taipei (2026-11-03T06:00:00Z)
+	if reopenResult.Data.DueAt != "2026-11-03T06:00:00Z" {
+		t.Fatalf("expected dueAt 2026-11-03T06:00:00Z, got %s", reopenResult.Data.DueAt)
 	}
 
 	// Idempotency replay of reopen
